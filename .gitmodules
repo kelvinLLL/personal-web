@@ -1,0 +1,6 @@
+[submodule "apps/book-reader"]
+	path = apps/book-reader
+	url = https://github.com/kelvinLLL/Hello-.git
+[submodule "apps/daily-nuance"]
+	path = apps/daily-nuance
+	url = https://github.com/kelvinLLL/nuance.git

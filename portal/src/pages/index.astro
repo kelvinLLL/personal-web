@@ -1,0 +1,87 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+---
+
+<BaseLayout title="kelvin11888.blog">
+  <main class="shell">
+    <header class="topbar">
+      <a class="brand" href="/">kelvin11888.blog</a>
+      <nav class="topnav">
+        <a href="/book-reader/">Book Reader</a>
+        <a href="/daily-nuance/">Daily Nuance</a>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">Portal shell</p>
+        <h1>One bright domain for reading, signal tracking, and future experiments.</h1>
+        <p class="lede">
+          This site is designed as an expandable personal portal: calm on the surface, nerdy in the details, and ready to grow beyond two projects without changing its bones.
+        </p>
+      </div>
+      <div class="hero-panel">
+        <div>
+          <span>Domain</span>
+          <strong>kelvin11888.blog</strong>
+        </div>
+        <div>
+          <span>Mounted apps</span>
+          <strong>2 live sections</strong>
+        </div>
+        <div>
+          <span>Direction</span>
+          <strong>Bright geek aesthetic</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid-section">
+      <div class="section-heading">
+        <p class="eyebrow">Current projects</p>
+        <h2>Two focused products, one shared front door.</h2>
+      </div>
+      <div class="project-grid">
+        <ProjectCard
+          title="Book Reader"
+          href="/book-reader/"
+          kicker="Reading system"
+          description="A browser-first reading space for EPUB and PDF, designed to feel polished, quiet, and fast."
+          chips={['Vite', 'React', 'EPUB', 'PDF']}
+          accent="amber"
+        />
+        <ProjectCard
+          title="Daily Nuance"
+          href="/daily-nuance/"
+          kicker="Signal radar"
+          description="A trend watchlist that collects, ranks, and explains interesting things across AI, programming, and psychology."
+          chips={['Docusaurus', 'uv', 'Ranking', 'Daily snapshots']}
+          accent="cyan"
+        />
+      </div>
+    </section>
+
+    <section class="expansion">
+      <div class="section-heading">
+        <p class="eyebrow">Expansion path</p>
+        <h2>Built to become a full personal site later.</h2>
+      </div>
+      <div class="future-grid">
+        <div class="future-card">
+          <h3>/about</h3>
+          <p>A personal page, project philosophy, and background.</p>
+        </div>
+        <div class="future-card">
+          <h3>/notes</h3>
+          <p>Short technical notes, reading logs, and experiments.</p>
+        </div>
+        <div class="future-card">
+          <h3>/lab</h3>
+          <p>Small prototypes, side tools, and unfinished ideas.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+</BaseLayout>
+

@@ -1,0 +1,16 @@
+---
+const {title, href, kicker, description, chips = [], accent = 'cyan'} = Astro.props;
+---
+
+<a class={`project-card project-card-${accent}`} href={href}>
+  <div class="project-card-topline">
+    <span>{kicker}</span>
+    <span class="project-card-arrow">Open</span>
+  </div>
+  <h3>{title}</h3>
+  <p>{description}</p>
+  <div class="project-chip-row">
+    {chips.map((chip) => <span class="project-chip">{chip}</span>)}
+  </div>
+</a>
+
