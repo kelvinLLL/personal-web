@@ -6,16 +6,21 @@ import httpProxy from 'http-proxy';
 
 import {pathExists, run, spawnProcess} from './lib/fs-utils.mjs';
 import {
+  buildDevRuntime,
+  chooseAvailablePort,
+  resolveProxyTargetForRuntime,
+} from './lib/dev-ports.mjs';
+import { shouldPrepareDailyNuanceData } from './lib/daily-nuance-dev.mjs';
+import {
   BOOK_READER_BASE,
   BOOK_READER_DEV_PORT,
   BOOK_READER_DIR,
   DAILY_NUANCE_BASE,
   DAILY_NUANCE_DEV_PORT,
   DAILY_NUANCE_DIR,
-  LOCAL_DEV_ORIGIN,
+  LOCAL_DEV_ROOT_PORT,
   PORTAL_DEV_PORT,
   PORTAL_DIR,
-  resolveProxyTarget,
 } from './lib/site-config.mjs';
 
 const children = [];
@@ -23,6 +28,7 @@ const proxy = httpProxy.createProxyServer({
   changeOrigin: true,
   ws: true,
 });
+let runtime;
 
 async function ensureInstall(cwd) {
   if (!(await pathExists(path.join(cwd, 'node_modules')))) {
@@ -31,6 +37,16 @@ async function ensureInstall(cwd) {
 }
 
 async function ensureDailyNuanceReady() {
+  const generatedHome = path.join(DAILY_NUANCE_DIR, 'generated', 'docs', 'home.mdx');
+  const forceRefresh = process.env.DAILY_NUANCE_REFRESH === '1';
+  const hasGeneratedHome = await pathExists(generatedHome);
+
+  if (!shouldPrepareDailyNuanceData({ hasGeneratedHome, forceRefresh })) {
+    console.log('Daily Nuance dev: reusing existing generated data.');
+    return;
+  }
+
+  console.log('Daily Nuance dev: preparing generated data...');
   run('uv', ['sync'], {cwd: DAILY_NUANCE_DIR});
   run('uv', ['run', 'novel-nuance', '--workspace', '.', '--date', localDateString()], {
     cwd: DAILY_NUANCE_DIR,
@@ -62,12 +78,19 @@ function killAll() {
 async function writeDailyNuanceEnvFile() {
   const envPath = path.join(DAILY_NUANCE_DIR, '.env.local');
   const contents = [
-    `SITE_URL=${LOCAL_DEV_ORIGIN}`,
+    `SITE_URL=${runtime.rootOrigin}`,
     `BASE_URL=${DAILY_NUANCE_BASE}`,
     '',
   ].join('\n');
   await fs.writeFile(envPath, contents, 'utf8');
 }
+
+runtime = buildDevRuntime({
+  rootPort: await chooseAvailablePort(LOCAL_DEV_ROOT_PORT),
+  portalPort: await chooseAvailablePort(PORTAL_DEV_PORT),
+  bookReaderPort: await chooseAvailablePort(BOOK_READER_DEV_PORT),
+  dailyNuancePort: await chooseAvailablePort(DAILY_NUANCE_DEV_PORT),
+});
 
 await ensureInstall(PORTAL_DIR);
 await ensureInstall(BOOK_READER_DIR);
@@ -76,7 +99,7 @@ await ensureDailyNuanceReady();
 await writeDailyNuanceEnvFile();
 
 register(
-  spawnProcess('npm', ['run', 'dev', '--', '--host', '127.0.0.1', '--port', String(PORTAL_DEV_PORT)], {
+  spawnProcess('npm', ['run', 'dev', '--', '--host', '127.0.0.1', '--port', String(runtime.portalPort)], {
     cwd: PORTAL_DIR,
     env: {
       BROWSER: 'none',
@@ -85,7 +108,7 @@ register(
 );
 
 register(
-  spawnProcess('npm', ['run', 'dev', '--', '--host', '127.0.0.1', '--port', String(BOOK_READER_DEV_PORT)], {
+  spawnProcess('npm', ['run', 'dev', '--', '--host', '127.0.0.1', '--port', String(runtime.bookReaderPort)], {
     cwd: BOOK_READER_DIR,
     env: {
       BROWSER: 'none',
@@ -95,18 +118,18 @@ register(
 );
 
 register(
-  spawnProcess('npm', ['run', 'start', '--', '--host', '127.0.0.1', '--port', String(DAILY_NUANCE_DEV_PORT), '--no-open'], {
+  spawnProcess('npm', ['run', 'start', '--', '--host', '127.0.0.1', '--port', String(runtime.dailyNuancePort), '--no-open'], {
     cwd: path.join(DAILY_NUANCE_DIR, 'site'),
     env: {
       BROWSER: 'none',
-      SITE_URL: LOCAL_DEV_ORIGIN,
+      SITE_URL: runtime.rootOrigin,
       BASE_URL: DAILY_NUANCE_BASE,
     },
   }),
 );
 
 const server = http.createServer((req, res) => {
-  const target = resolveProxyTarget(req.url || '/');
+  const target = resolveProxyTargetForRuntime(req.url || '/', runtime);
   proxy.web(req, res, {target}, (error) => {
     res.writeHead(502, {'Content-Type': 'text/plain; charset=utf-8'});
     res.end(`Upstream not ready: ${target}\n${error.message}`);
@@ -114,7 +137,7 @@ const server = http.createServer((req, res) => {
 });
 
 server.on('upgrade', (req, socket, head) => {
-  const target = resolveProxyTarget(req.url || '/');
+  const target = resolveProxyTargetForRuntime(req.url || '/', runtime);
   proxy.ws(req, socket, head, {target});
 });
 
@@ -128,9 +151,10 @@ process.on('SIGTERM', () => {
   server.close(() => process.exit(0));
 });
 
-server.listen(3000, '127.0.0.1', () => {
-  console.log(`Unified dev server ready at ${LOCAL_DEV_ORIGIN}`);
-  console.log(`Portal -> http://127.0.0.1:${PORTAL_DEV_PORT}/`);
-  console.log(`Book Reader -> http://127.0.0.1:${BOOK_READER_DEV_PORT}${BOOK_READER_BASE}`);
-  console.log(`Daily Nuance -> http://127.0.0.1:${DAILY_NUANCE_DEV_PORT}${DAILY_NUANCE_BASE}`);
+server.listen(runtime.rootPort, '127.0.0.1', () => {
+  console.log(`Unified dev server ready at ${runtime.rootOrigin}`);
+  console.log('Open only the unified root URL above; internal child ports are printed for debugging only.');
+  console.log(`Portal -> ${runtime.portalTarget}/`);
+  console.log(`Book Reader -> ${runtime.bookReaderTarget}${BOOK_READER_BASE}`);
+  console.log(`Daily Nuance -> ${runtime.dailyNuanceTarget}${DAILY_NUANCE_BASE}`);
 });

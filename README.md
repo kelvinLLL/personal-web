@@ -44,9 +44,8 @@ npm run dev
 
 This starts one local entrypoint at:
 
-- `http://127.0.0.1:3000/`
-- `http://127.0.0.1:3000/book-reader/`
-- `http://127.0.0.1:3000/daily-nuance/`
+- one unified root URL printed in the terminal
+- plus matching `/book-reader/` and `/daily-nuance/` subpaths under that same origin
 
 How it works:
 
@@ -55,7 +54,23 @@ How it works:
 - Docusaurus runs `daily-nuance` on another local dev port with `BASE_URL=/daily-nuance/`.
 - A small Node reverse proxy forwards the browser request to the right dev server by path prefix, so it feels like one site.
 
-`uv` is still used for `daily-nuance`, because that project needs Python to refresh ranking data before the Docusaurus app starts.
+If `3000`, `4321`, `4322`, or `4323` are already in use, the script now automatically picks the next available ports and prints the exact URLs you should open.
+
+`uv` is still used for `daily-nuance`, because that project has a Python data pipeline behind the Docusaurus UI.
+
+By default, `npm run dev` reuses the latest generated `daily-nuance` data if it already exists, so startup stays fast.
+
+If you want a fresh data pull before local testing:
+
+```bash
+npm run refresh:daily-nuance
+```
+
+If you want startup itself to force a refresh:
+
+```bash
+DAILY_NUANCE_REFRESH=1 npm run dev
+```
 
 ## Update submodules after upstream changes
 

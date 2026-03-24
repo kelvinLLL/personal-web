@@ -2,5 +2,5 @@ dist/
 node_modules/
 portal/node_modules/
 portal/.astro/
+.superpowers/
 .DS_Store
-
