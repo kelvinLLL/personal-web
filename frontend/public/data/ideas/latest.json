@@ -1,0 +1,148 @@
+{
+  "version": "1",
+  "updated_at": "2026-04-11T04:59:18.577946+00:00",
+  "ideas": [
+    {
+      "id": "5ba4c38d-3308-4c62-90f0-3f7051976daa",
+      "title": "6 Open Source Workflow Management & Automation Tools for 2026",
+      "tagline": "A curated guide to top open-source workflow automation platforms for developers and businesses",
+      "category": "tool",
+      "status": "pending",
+      "scores": {
+        "value": 7,
+        "learnability": 6,
+        "fun": 5,
+        "feasibility": 9,
+        "overall": 7
+      },
+      "detail": {
+        "why_interesting": "Open-source workflow tools offer transparency, flexibility, and community-driven innovation that proprietary solutions often lack. This curated list helps readers navigate the evolving landscape of automation platforms like Windmill, Activepieces, and others. The topic combines practical utility with the growing developer preference for open-source infrastructure.",
+        "why_worth_doing": "High search demand exists for workflow automation comparisons, and well-researched guides can establish authority and drive organic traffic. This content can serve as a cornerstone article that attracts both technical and business audiences interested in automation.",
+        "references": [
+          {
+            "title": "6 Open Source Workflow Management Tools for 2026",
+            "url": "https://budibase.com/blog/automation/open-source-workflow-management-tools/",
+            "type": "article"
+          },
+          {
+            "title": "Top 10 Open-Source Workflow Automation Software in 2026",
+            "url": "https://activepieces.com/blog/open-source-workflow-automation-software",
+            "type": "article"
+          },
+          {
+            "title": "Open Source Automation Tools 2026 — 13 Ultimate Picks",
+            "url": "https://www.linuxtck.com/open-source-automation-tools-2026/",
+            "type": "article"
+          },
+          {
+            "title": "Best Workflow Automation Tools 2026: TOP 7",
+            "url": "https://example.com/best-workflow-automation-tools-2026",
+            "type": "article"
+          }
+        ],
+        "tech_hints": [
+          "SEO-optimized content structure",
+          "comparison framework",
+          "embedded tool demonstrations",
+          "interactive comparison table"
+        ],
+        "effort": "M"
+      },
+      "meta": {
+        "discovered_at": "2026-04-11T04:57:44.162119+00:00Z",
+        "source": "workflow_selected",
+        "workflow_run_id": "6474830d-cff1-4e64-9bcf-ed140bb341ff"
+      }
+    },
+    {
+      "id": "223dab97-58c9-4d6a-90da-5d086b6eec36",
+      "title": "Indie Hacker Tools Hub",
+      "tagline": "Curated collection of essential tools for indie hackers to build and launch products faster",
+      "category": "tool",
+      "status": "pending",
+      "scores": {
+        "value": 7,
+        "learnability": 8,
+        "fun": 5,
+        "feasibility": 9,
+        "overall": 7
+      },
+      "detail": {
+        "why_interesting": "This serves as a valuable time-saver for builders who need to quickly find the right tool without endless searching. It can become a trusted reference point in the indie hacker community. The curated nature adds trust compared to random Google results.",
+        "why_worth_doing": "High SEO potential since tool-related searches are common. Could monetize through affiliate links or premium tool recommendations. Creates a defensible brand if curation quality is maintained over time.",
+        "references": [
+          {
+            "title": "Indie Hacker Tools - One Point Star",
+            "url": "https://www.onepointstar.com/en/tools/",
+            "type": "other"
+          },
+          {
+            "title": "Indie Hackers Community",
+            "url": "https://www.indiehackers.com",
+            "type": "other"
+          },
+          {
+            "title": "The Indie Hacker's Toolkit: 15 Free Resources",
+            "url": "https://www.indiehackers.com/forum",
+            "type": "article"
+          }
+        ],
+        "tech_hints": [
+          "Next.js or Astro for static site",
+          "MDX for content management",
+          "Category/tag filtering system",
+          "Search functionality",
+          "Dark/light mode toggle"
+        ],
+        "effort": "M"
+      },
+      "meta": {
+        "discovered_at": "2026-04-11T04:58:41.508171+00:00Z",
+        "source": "workflow_selected",
+        "workflow_run_id": "6474830d-cff1-4e64-9bcf-ed140bb341ff"
+      }
+    },
+    {
+      "id": "0a9887ca-1911-4bd5-9b3f-15107706bddb",
+      "title": "ZumerLab Devtools",
+      "tagline": "A set of independent devtools providing a complete workflow for small projects",
+      "category": "tool",
+      "status": "pending",
+      "scores": {
+        "value": 7,
+        "learnability": 7,
+        "fun": 5,
+        "feasibility": 8,
+        "overall": 7
+      },
+      "detail": {
+        "why_interesting": "Modular design allows developers to pick and choose only the tools they need, reducing overhead. The independent nature means these tools can integrate into existing workflows rather than forcing adoption of a full ecosystem. The focus on small projects fills a niche often overlooked by enterprise-focused devtool companies.",
+        "why_worth_doing": "Small projects often suffer from either over-engineering with heavy tools or under-engineering with ad-hoc scripts. A curated set of purpose-built tools can provide structure without complexity. This could become a go-to stack for indie hackers and solo developers seeking productivity without friction.",
+        "references": [
+          {
+            "title": "Show HN: I made a set of devtools for small projects",
+            "url": "https://news.ycombinator.com/item?id=39843392",
+            "type": "hn"
+          },
+          {
+            "title": "zumerlab GitHub profile",
+            "url": "https://github.com/zumerlab",
+            "type": "repo"
+          }
+        ],
+        "tech_hints": [
+          "CLI tools",
+          "Build automation",
+          "Configuration management",
+          "Task runners"
+        ],
+        "effort": "M"
+      },
+      "meta": {
+        "discovered_at": "2026-04-11T04:57:18.762326+00:00Z",
+        "source": "workflow_selected",
+        "workflow_run_id": "6474830d-cff1-4e64-9bcf-ed140bb341ff"
+      }
+    }
+  ]
+}

@@ -1,0 +1,597 @@
+{
+  "id": "6474830d-cff1-4e64-9bcf-ed140bb341ff",
+  "direction": "developer workflow tools",
+  "model_key": "minimax-m2.7",
+  "status": "done_with_warnings",
+  "started_at": "2026-04-11T04:56:14.054497+00:00",
+  "completed_at": "2026-04-11T04:59:18.578915+00:00",
+  "searched": 22,
+  "shortlisted": 13,
+  "analyzed": 3,
+  "persisted": 3,
+  "failed": 10,
+  "candidates": [
+    {
+      "id": "2f33e1d5-5d98-4220-b6c5-4d9af538080a",
+      "title": "7 Small Workflow Tweaks That Actually Helped My ...",
+      "url": "https://dev.to/johannesjo/7-small-workflow-tweaks-that-actually-helped-my-developer-productivity-3iib",
+      "snippet": "# 7 Small Workflow Tweaks That Actually Helped My Developer Productivity. I've been building developer tools for 8 years, which means I've had plenty of time to experiment with what works. What actually helped were small, boring changes. I use a time-boxing app for this - it combines todos with time-blocking, so I'm not switching between apps. For whatever I'm working on right now. Most dev-focused tools support this (GitHub Issues, GitLab, Jira, etc.). Track time, but not for productivity theat",
+      "source_query": "developer workflow tools problem worth solving small project",
+      "source_domain": "dev.to",
+      "status": "analysis_failed",
+      "filter_reason": null,
+      "analysis_error": "analysis_failed",
+      "analysis": null,
+      "idea": null,
+      "final_score": null
+    },
+    {
+      "id": "cb736b18-e89b-417e-96fd-a5d0ac6352e1",
+      "title": "Top Tools That Help Improve the Development Workflow",
+      "url": "https://www.cloudbees.com/blog/development-workflow-top-tools",
+      "snippet": "Take a look at any high-performing software team and you’re bound to find the same thing: highly fluid and agile development workflows. If you’re unfamiliar with the term, a development workflow is simply a system or process that software teams use to manage production. Use this solution if you want to visualize and manage projects and workflows across different teams. Asana is another go-to solution that project managers and engineers can use to track workflows. DevOps teams use GitHub to share",
+      "source_query": "developer workflow tools problem worth solving small project",
+      "source_domain": "www.cloudbees.com",
+      "status": "filtered_out",
+      "filter_reason": "low_signal_or_aggregator",
+      "analysis_error": null,
+      "analysis": null,
+      "idea": null,
+      "final_score": null
+    },
+    {
+      "id": "df52653a-9f62-4249-a94c-e33468fd34d9",
+      "title": "Developer Tools That Actually Fixed My Workflow (Not Just ...",
+      "url": "https://dev.to/maya_bayers/developer-tools-that-actually-fixed-my-workflow-not-just-promised-to-o5",
+      "snippet": "This post covers five tools I've either integrated into my own setup or evaluated seriously over the last few months. They each solve a specific",
+      "source_query": "developer workflow tools problem worth solving small project",
+      "source_domain": "dev.to",
+      "status": "analysis_failed",
+      "filter_reason": null,
+      "analysis_error": "analysis_failed",
+      "analysis": null,
+      "idea": null,
+      "final_score": null
+    },
+    {
+      "id": "9f3ba6e1-c341-4690-9750-6e58bb35e458",
+      "title": "7 Must-Have Tools for Your Coding Workflow - KDnuggets",
+      "url": "https://www.kdnuggets.com/7-must-have-tools-for-your-coding-workflow",
+      "snippet": "GitHub Actions: Automate tests, builds, and deployments with simple YAML; Issues & Projects: Track tasks, bugs, and roadmaps alongside your code",
+      "source_query": "developer workflow tools problem worth solving small project",
+      "source_domain": "www.kdnuggets.com",
+      "status": "analysis_failed",
+      "filter_reason": null,
+      "analysis_error": "analysis_failed",
+      "analysis": null,
+      "idea": null,
+      "final_score": null
+    },
+    {
+      "id": "d41171ce-d77d-4f0e-a4c3-1b787783bf3d",
+      "title": "15 Web Development Tools for Your Web Development Workflow",
+      "url": "https://strapi.io/blog/tools-streamline-web-development-workflow",
+      "snippet": "Each tool eliminates specific friction points that force you out of your development flow, letting you stay focused on building exceptional web experiences instead of managing your toolchain. Netlify turns each Git push into an automated build, test, and deploy pipeline that ends on a global Content Delivery Network, delivering static or server-rendered assets to users fast without manual configuration. Instead of hopping from GitHub to a build server, then over to a separate CDN dashboard, you ",
+      "source_query": "developer workflow tools problem worth solving small project",
+      "source_domain": "strapi.io",
+      "status": "analysis_failed",
+      "filter_reason": null,
+      "analysis_error": "analysis_failed",
+      "analysis": null,
+      "idea": null,
+      "final_score": null
+    },
+    {
+      "id": "0f4eac00-29a9-465c-bb7f-e8beba3ba93b",
+      "title": "AI Developer Workflow Tools Are Rewriting How Software Gets Built",
+      "url": "https://www.reddit.com/r/AISEOInsider/comments/1qljtz4/ai_developer_workflow_tools_are_rewriting_how/",
+      "snippet": "Enter Aion UI, a completely free and open-source ... Built an AI-powered Excel tool for automation workflows - no Excel installation needed.",
+      "source_query": "developer workflow tools \"built this\" open source tool",
+      "source_domain": "www.reddit.com",
+      "status": "filtered_out",
+      "filter_reason": "low_signal_or_aggregator",
+      "analysis_error": null,
+      "analysis": null,
+      "idea": null,
+      "final_score": null
+    },
+    {
+      "id": "c062fe36-8b5d-487f-aeea-bd444139ed31",
+      "title": "6 Open Source Workflow Management & Automation Tools for 2026",
+      "url": "https://budibase.com/blog/automation/open-source-workflow-management-tools/",
+      "snippet": "With a clearer picture of what workflow management tools are and some of the key reasons that we might opt for an open-source solution, we can move on to checking out some of the specific platforms that are prominent in this space. Windmill is another popular platform in the open-source workflow management space, offering a developer platform and workflow engine for creating internal tasks, automation logic, and data-centric UIs. In terms of automation capabilities, Windmill centers around two k",
+      "source_query": "developer workflow tools \"built this\" open source tool",
+      "source_domain": "budibase.com",
+      "status": "selected",
+      "filter_reason": null,
+      "analysis_error": null,
+      "analysis": {
+        "title": "6 Open Source Workflow Management & Automation Tools for 2026",
+        "tagline": "A curated guide to top open-source workflow automation platforms for developers and businesses",
+        "category": "tool",
+        "target_user": "Developers, DevOps engineers, and businesses seeking open-source workflow automation solutions",
+        "why_now": "Workflow automation is becoming essential for business efficiency, and open-source solutions are gaining traction as organizations seek cost-effective, customizable alternatives to proprietary software heading into 2026.",
+        "why_interesting": "Open-source workflow tools offer transparency, flexibility, and community-driven innovation that proprietary solutions often lack. This curated list helps readers navigate the evolving landscape of automation platforms like Windmill, Activepieces, and others. The topic combines practical utility with the growing developer preference for open-source infrastructure.",
+        "why_worth_doing": "High search demand exists for workflow automation comparisons, and well-researched guides can establish authority and drive organic traffic. This content can serve as a cornerstone article that attracts both technical and business audiences interested in automation.",
+        "tech_hints": [
+          "SEO-optimized content structure",
+          "comparison framework",
+          "embedded tool demonstrations",
+          "interactive comparison table"
+        ],
+        "effort": "M",
+        "quality_score": 7,
+        "novelty_score": 4,
+        "buildability_score": 9,
+        "value": 7,
+        "learnability": 6,
+        "fun": 5,
+        "feasibility": 9,
+        "risk_flags": [
+          "Content saturation - similar articles exist on multiple platforms",
+          "Requires ongoing updates to remain relevant in 2026",
+          "Needs unique angle or data to differentiate from existing content"
+        ],
+        "references": [
+          {
+            "title": "6 Open Source Workflow Management Tools for 2026",
+            "url": "https://budibase.com/blog/automation/open-source-workflow-management-tools/",
+            "type": "article"
+          },
+          {
+            "title": "Top 10 Open-Source Workflow Automation Software in 2026",
+            "url": "https://activepieces.com/blog/open-source-workflow-automation-software",
+            "type": "article"
+          },
+          {
+            "title": "Open Source Automation Tools 2026 — 13 Ultimate Picks",
+            "url": "https://www.linuxtck.com/open-source-automation-tools-2026/",
+            "type": "article"
+          },
+          {
+            "title": "Best Workflow Automation Tools 2026: TOP 7",
+            "url": "https://example.com/best-workflow-automation-tools-2026",
+            "type": "article"
+          }
+        ]
+      },
+      "idea": {
+        "id": "5ba4c38d-3308-4c62-90f0-3f7051976daa",
+        "title": "6 Open Source Workflow Management & Automation Tools for 2026",
+        "tagline": "A curated guide to top open-source workflow automation platforms for developers and businesses",
+        "category": "tool",
+        "status": "pending",
+        "scores": {
+          "value": 7,
+          "learnability": 6,
+          "fun": 5,
+          "feasibility": 9,
+          "overall": 7
+        },
+        "detail": {
+          "why_interesting": "Open-source workflow tools offer transparency, flexibility, and community-driven innovation that proprietary solutions often lack. This curated list helps readers navigate the evolving landscape of automation platforms like Windmill, Activepieces, and others. The topic combines practical utility with the growing developer preference for open-source infrastructure.",
+          "why_worth_doing": "High search demand exists for workflow automation comparisons, and well-researched guides can establish authority and drive organic traffic. This content can serve as a cornerstone article that attracts both technical and business audiences interested in automation.",
+          "references": [
+            {
+              "title": "6 Open Source Workflow Management Tools for 2026",
+              "url": "https://budibase.com/blog/automation/open-source-workflow-management-tools/",
+              "type": "article"
+            },
+            {
+              "title": "Top 10 Open-Source Workflow Automation Software in 2026",
+              "url": "https://activepieces.com/blog/open-source-workflow-automation-software",
+              "type": "article"
+            },
+            {
+              "title": "Open Source Automation Tools 2026 — 13 Ultimate Picks",
+              "url": "https://www.linuxtck.com/open-source-automation-tools-2026/",
+              "type": "article"
+            },
+            {
+              "title": "Best Workflow Automation Tools 2026: TOP 7",
+              "url": "https://example.com/best-workflow-automation-tools-2026",
+              "type": "article"
+            }
+          ],
+          "tech_hints": [
+            "SEO-optimized content structure",
+            "comparison framework",
+            "embedded tool demonstrations",
+            "interactive comparison table"
+          ],
+          "effort": "M"
+        },
+        "meta": {
+          "discovered_at": "2026-04-11T04:57:44.162119+00:00Z",
+          "source": "workflow_selected",
+          "workflow_run_id": "6474830d-cff1-4e64-9bcf-ed140bb341ff"
+        }
+      },
+      "final_score": 6.75
+    },
+    {
+      "id": "2f070bbe-1da0-4848-93f4-5f91952fdda7",
+      "title": "A curated list of awesome open source workflow engines",
+      "url": "https://github.com/meirwah/awesome-workflow-engines",
+      "snippet": "* Bytechef  - Open-source, low-code, extendable API integration & workflow automation platform. * Dapr Workflows  - Author and execute durable & long-running Workflow-as-code at scale in Python, Javascript, .NET, Java & Go. Based on the Open-source Durable Task Framework. * Prefect  - Prefect is a new workflow management system, designed for modern infrastructure and powered by the open-source Prefect Core workflow engine. * Wexflow  .NET Workflow Engine and Automation Platform. * jBPM  - The co",
+      "source_query": "developer workflow tools \"built this\" open source tool",
+      "source_domain": "github.com",
+      "status": "filtered_out",
+      "filter_reason": "low_signal_or_aggregator",
+      "analysis_error": null,
+      "analysis": null,
+      "idea": null,
+      "final_score": null
+    },
+    {
+      "id": "c9dcf14d-5997-4b04-ab6f-a3c2f6f9df02",
+      "title": "20 best open-source workflow automation tools for developers",
+      "url": "https://www.anything.com/blog/workflow-automation-tools-open-source",
+      "snippet": "Describe the automation or tool you want to build, and let the platform generate the core application. Developers, founders, and automation",
+      "source_query": "developer workflow tools \"built this\" open source tool",
+      "source_domain": "www.anything.com",
+      "status": "filtered_out",
+      "filter_reason": "low_signal_or_aggregator",
+      "analysis_error": null,
+      "analysis": null,
+      "idea": null,
+      "final_score": null
+    },
+    {
+      "id": "37f55e88-1619-40bb-9241-2c148b776202",
+      "title": "Top 15 Open-Source Workflow Automation Tools | by TechLatest.Net",
+      "url": "https://medium.com/@techlatest.net/top-15-open-source-workflow-automation-tools-e2822e65c842",
+      "snippet": "Tool Breakdowns · n8n · Activepieces · Node-RED · Apache Airflow · Huginn · Kestra · Automa · Automatisch.",
+      "source_query": "developer workflow tools \"built this\" open source tool",
+      "source_domain": "medium.com",
+      "status": "filtered_out",
+      "filter_reason": "low_signal_or_aggregator",
+      "analysis_error": null,
+      "analysis": null,
+      "idea": null,
+      "final_score": null
+    },
+    {
+      "id": "985b4f38-96a8-40a0-867a-ae1e467b67c8",
+      "title": "Show HN: I made a set of devtools for small projects - Hacker News",
+      "url": "https://news.ycombinator.com/item?id=39843392",
+      "snippet": "Each tool can be used independently based on your workflow, providing a dev workflow for small projects. I'd like to share these resources",
+      "source_query": "developer workflow tools site:news.ycombinator.com \"Show HN\"",
+      "source_domain": "news.ycombinator.com",
+      "status": "selected",
+      "filter_reason": null,
+      "analysis_error": null,
+      "analysis": {
+        "title": "ZumerLab Devtools",
+        "tagline": "A set of independent devtools providing a complete workflow for small projects",
+        "category": "tool",
+        "target_user": "Solo developers and small teams working on small-to-medium projects who need lightweight, modular tooling",
+        "why_now": "Dev tools dominate Show HN launches (62%), but many are overly complex or bloated for small projects. There's demand for lean, composable tooling that doesn't require extensive setup.",
+        "why_interesting": "Modular design allows developers to pick and choose only the tools they need, reducing overhead. The independent nature means these tools can integrate into existing workflows rather than forcing adoption of a full ecosystem. The focus on small projects fills a niche often overlooked by enterprise-focused devtool companies.",
+        "why_worth_doing": "Small projects often suffer from either over-engineering with heavy tools or under-engineering with ad-hoc scripts. A curated set of purpose-built tools can provide structure without complexity. This could become a go-to stack for indie hackers and solo developers seeking productivity without friction.",
+        "tech_hints": [
+          "CLI tools",
+          "Build automation",
+          "Configuration management",
+          "Task runners"
+        ],
+        "effort": "M",
+        "quality_score": 6,
+        "novelty_score": 4,
+        "buildability_score": 7,
+        "value": 7,
+        "learnability": 7,
+        "fun": 5,
+        "feasibility": 8,
+        "risk_flags": [
+          "Competition from established toolchains (Make, npm scripts, etc.)",
+          "GitHub repo not accessible for detailed evaluation",
+          "Low HN engagement (28 points, 7 comments) suggests limited community interest",
+          "Devtools category is saturated on Show HN"
+        ],
+        "references": [
+          {
+            "title": "Show HN: I made a set of devtools for small projects",
+            "url": "https://news.ycombinator.com/item?id=39843392",
+            "type": "hn"
+          },
+          {
+            "title": "zumerlab GitHub profile",
+            "url": "https://github.com/zumerlab",
+            "type": "repo"
+          }
+        ]
+      },
+      "idea": {
+        "id": "0a9887ca-1911-4bd5-9b3f-15107706bddb",
+        "title": "ZumerLab Devtools",
+        "tagline": "A set of independent devtools providing a complete workflow for small projects",
+        "category": "tool",
+        "status": "pending",
+        "scores": {
+          "value": 7,
+          "learnability": 7,
+          "fun": 5,
+          "feasibility": 8,
+          "overall": 7
+        },
+        "detail": {
+          "why_interesting": "Modular design allows developers to pick and choose only the tools they need, reducing overhead. The independent nature means these tools can integrate into existing workflows rather than forcing adoption of a full ecosystem. The focus on small projects fills a niche often overlooked by enterprise-focused devtool companies.",
+          "why_worth_doing": "Small projects often suffer from either over-engineering with heavy tools or under-engineering with ad-hoc scripts. A curated set of purpose-built tools can provide structure without complexity. This could become a go-to stack for indie hackers and solo developers seeking productivity without friction.",
+          "references": [
+            {
+              "title": "Show HN: I made a set of devtools for small projects",
+              "url": "https://news.ycombinator.com/item?id=39843392",
+              "type": "hn"
+            },
+            {
+              "title": "zumerlab GitHub profile",
+              "url": "https://github.com/zumerlab",
+              "type": "repo"
+            }
+          ],
+          "tech_hints": [
+            "CLI tools",
+            "Build automation",
+            "Configuration management",
+            "Task runners"
+          ],
+          "effort": "M"
+        },
+        "meta": {
+          "discovered_at": "2026-04-11T04:57:18.762326+00:00Z",
+          "source": "workflow_selected",
+          "workflow_run_id": "6474830d-cff1-4e64-9bcf-ed140bb341ff"
+        }
+      },
+      "final_score": 6.0
+    },
+    {
+      "id": "2a0a84e8-d109-4160-902d-1dcf6e92f651",
+      "title": "A curated list of awesome developer-first tools products. - GitHub",
+      "url": "https://github.com/agamm/awesome-developer-first",
+      "snippet": "* Kilo Code - Fast, open-source AI coding agent for VS Code and JetBrains. * PostHog - Open-source product analytics platform. * BoxyHQ Enterprise SSO - Open-source API for enterprise SSO and Directory Sync. * Trigger.dev - Open-source platform to create workflows from APIs, on a schedule or on demand. * Koyeb - Serverless platform for deploying full-stack apps and APIs in minutes. * Nango - Hundreds of pre-built product integrations with 250+ APIs, customizable in code. * Revert - Open-source u",
+      "source_query": "developer workflow tools site:github.com open source project",
+      "source_domain": "github.com",
+      "status": "analysis_failed",
+      "filter_reason": null,
+      "analysis_error": "analysis_failed",
+      "analysis": null,
+      "idea": null,
+      "final_score": null
+    },
+    {
+      "id": "5bfcd881-cfb0-4ded-a4e4-62b4059d29ba",
+      "title": "GitHub - toolworks-dev/open-source-saas: A curated list of verified, modern open-source SaaS projects for developers, teams, and builders · GitHub",
+      "url": "https://github.com/toolworks-dev/open-source-saas",
+      "snippet": "*A curated collection of the best open-source SaaS tools for developers, teams, and businesses, maintained by ToolWorks.dev.*. 1. Cal.com - Open-source scheduling and booking platform (MIT). 4. Ackee - Self-hosted analytics tool (MIT). 1. Label Studio - Data labeling platform (Apache-2.0). 6. MLFlow - ML lifecycle management platform (Apache-2.0). 2. PostHog - Product analytics platform (MIT). 6. Budibase - Low-code platform for internal tools (MIT). Mattermost - Team communication tool (MIT). 2",
+      "source_query": "developer workflow tools site:github.com open source project",
+      "source_domain": "github.com",
+      "status": "filtered_out",
+      "filter_reason": "domain_diversity_limit",
+      "analysis_error": null,
+      "analysis": null,
+      "idea": null,
+      "final_score": null
+    },
+    {
+      "id": "377effe4-dda6-458f-8cd6-30b8c71c484f",
+      "title": "Overview on strategies for FIs to setup an open source contribution ...",
+      "url": "https://github.com/finos/open-developer-platform/discussions/163",
+      "snippet": "Below is a development workflow that can be configured using this strategy: Developers work against the internal Git repository, using branches to develop",
+      "source_query": "developer workflow tools site:github.com open source project",
+      "source_domain": "github.com",
+      "status": "analysis_failed",
+      "filter_reason": null,
+      "analysis_error": "analysis_failed",
+      "analysis": null,
+      "idea": null,
+      "final_score": null
+    },
+    {
+      "id": "61cfa24d-72d2-450b-b0a9-efb3b1b6ad72",
+      "title": "GitHub Marketplace: tools to improve your workflow",
+      "url": "https://github.com/marketplace",
+      "snippet": "*   [Marketplace](https://github.com/marketplace). *   [Featured](https://github.com/marketplace). *   [Catalog](https://github.com/marketplace?type=models). *   [All apps](https://github.com/marketplace?type=apps). *   [AI Assisted](https://github.com/marketplace?type=apps&category=ai-assisted). *   [API management](https://github.com/marketplace?type=apps&category=api-management). *   [Chat](https://github.com/marketplace?type=apps&category=chat). *   [Code quality](https://github.com/marketpl",
+      "source_query": "developer workflow tools site:github.com open source project",
+      "source_domain": "github.com",
+      "status": "analysis_failed",
+      "filter_reason": null,
+      "analysis_error": "analysis_failed",
+      "analysis": null,
+      "idea": null,
+      "final_score": null
+    },
+    {
+      "id": "dbb1d2b7-a4c1-457d-9743-e623a1e55465",
+      "title": "9 Developer Productivity Tools You Wish You Knew Sooner 🔥🧑‍💻 - DEV Community",
+      "url": "https://dev.to/madza/9-developer-productivity-tools-you-wish-you-knew-sooner-4iee",
+      "snippet": "The tools mentioned here extend various niches, such as fast build processes, workflow automation, simple authentication, performance monitoring, prototyping, static site generation, task automation, and serverless databases. Depot​‍​‌‍​‍‌ is a cloud-based build service that accelerates Docker image creation and optimizes GitHub Actions workflows with managed caching, reducing build times and resource usage. 🌎 Website Link: https://depot.dev/. 🌎 Website Link: https://trigger.dev. Argos CI helps ",
+      "source_query": "developer workflow tools weekend project tool",
+      "source_domain": "dev.to",
+      "status": "analysis_failed",
+      "filter_reason": null,
+      "analysis_error": "analysis_failed",
+      "analysis": null,
+      "idea": null,
+      "final_score": null
+    },
+    {
+      "id": "b554cab6-8d0a-47e8-871b-63e1d44ea787",
+      "title": "15 Best Software Development Management Tools For 2026",
+      "url": "https://monday.com/blog/rnd/software-development-management-tools/",
+      "snippet": "The platform specializes in unifying complex development workflows across multiple teams and projects, making it ideal for large organizations managing sophisticated product portfolios. Wrike excels at connecting development teams with business operations through two-way sync capabilities that let engineers stay in their native tools while providing unified reporting and planning for product managers and executives. Trello excels at providing visual workflow management for development teams who ",
+      "source_query": "developer workflow tools weekend project tool",
+      "source_domain": "monday.com",
+      "status": "filtered_out",
+      "filter_reason": "low_signal_or_aggregator",
+      "analysis_error": null,
+      "analysis": null,
+      "idea": null,
+      "final_score": null
+    },
+    {
+      "id": "44373a79-7d71-4038-9882-97adb891ad14",
+      "title": "Indie Hacker Tools - Essential Developer Resources | One Point Star",
+      "url": "https://www.onepointstar.com/en/tools/",
+      "snippet": "# Essential Tools for Indie Hackers. ## Discover powerful tools for development, design, and business. Enhance your independent development workflow with these essential tools. From code editors to design tools, find everything you need to build and launch your products. Free online tool to view multiple images side by sideFigma logo. Modern issue tracking and project managementTailwind CSS logo. #### What tools are essential for indie hackers? Our recommended tools include code editors, design ",
+      "source_query": "developer workflow tools indie hacker tool",
+      "source_domain": "www.onepointstar.com",
+      "status": "selected",
+      "filter_reason": null,
+      "analysis_error": null,
+      "analysis": {
+        "title": "Indie Hacker Tools Hub",
+        "tagline": "Curated collection of essential tools for indie hackers to build and launch products faster",
+        "category": "tool",
+        "target_user": "Indie hackers, solo developers, and bootstrapped entrepreneurs looking for tool recommendations",
+        "why_now": "The indie hacker movement is growing rapidly with more people building solo; the tool landscape is fragmented across many sites making it hard to discover the best resources",
+        "why_interesting": "This serves as a valuable time-saver for builders who need to quickly find the right tool without endless searching. It can become a trusted reference point in the indie hacker community. The curated nature adds trust compared to random Google results.",
+        "why_worth_doing": "High SEO potential since tool-related searches are common. Could monetize through affiliate links or premium tool recommendations. Creates a defensible brand if curation quality is maintained over time.",
+        "tech_hints": [
+          "Next.js or Astro for static site",
+          "MDX for content management",
+          "Category/tag filtering system",
+          "Search functionality",
+          "Dark/light mode toggle"
+        ],
+        "effort": "M",
+        "quality_score": 6,
+        "novelty_score": 4,
+        "buildability_score": 8,
+        "value": 7,
+        "learnability": 8,
+        "fun": 5,
+        "feasibility": 9,
+        "risk_flags": [
+          "High competition - similar resource pages already exist",
+          "Maintenance burden - tools change URLs, get acquired, or shut down",
+          "SEO difficulty - standing out requires significant content differentiation",
+          "Low differentiation if just a generic list without unique angle"
+        ],
+        "references": [
+          {
+            "title": "Indie Hacker Tools - One Point Star",
+            "url": "https://www.onepointstar.com/en/tools/",
+            "type": "other"
+          },
+          {
+            "title": "Indie Hackers Community",
+            "url": "https://www.indiehackers.com",
+            "type": "other"
+          },
+          {
+            "title": "The Indie Hacker's Toolkit: 15 Free Resources",
+            "url": "https://www.indiehackers.com/forum",
+            "type": "article"
+          }
+        ]
+      },
+      "idea": {
+        "id": "223dab97-58c9-4d6a-90da-5d086b6eec36",
+        "title": "Indie Hacker Tools Hub",
+        "tagline": "Curated collection of essential tools for indie hackers to build and launch products faster",
+        "category": "tool",
+        "status": "pending",
+        "scores": {
+          "value": 7,
+          "learnability": 8,
+          "fun": 5,
+          "feasibility": 9,
+          "overall": 7
+        },
+        "detail": {
+          "why_interesting": "This serves as a valuable time-saver for builders who need to quickly find the right tool without endless searching. It can become a trusted reference point in the indie hacker community. The curated nature adds trust compared to random Google results.",
+          "why_worth_doing": "High SEO potential since tool-related searches are common. Could monetize through affiliate links or premium tool recommendations. Creates a defensible brand if curation quality is maintained over time.",
+          "references": [
+            {
+              "title": "Indie Hacker Tools - One Point Star",
+              "url": "https://www.onepointstar.com/en/tools/",
+              "type": "other"
+            },
+            {
+              "title": "Indie Hackers Community",
+              "url": "https://www.indiehackers.com",
+              "type": "other"
+            },
+            {
+              "title": "The Indie Hacker's Toolkit: 15 Free Resources",
+              "url": "https://www.indiehackers.com/forum",
+              "type": "article"
+            }
+          ],
+          "tech_hints": [
+            "Next.js or Astro for static site",
+            "MDX for content management",
+            "Category/tag filtering system",
+            "Search functionality",
+            "Dark/light mode toggle"
+          ],
+          "effort": "M"
+        },
+        "meta": {
+          "discovered_at": "2026-04-11T04:58:41.508171+00:00Z",
+          "source": "workflow_selected",
+          "workflow_run_id": "6474830d-cff1-4e64-9bcf-ed140bb341ff"
+        }
+      },
+      "final_score": 6.25
+    },
+    {
+      "id": "b55e0ee1-5ce9-4000-b0f9-4a552094d5be",
+      "title": "10 Best Free AI Tools Every Indie Hacker Needs in 2026",
+      "url": "https://www.buildmvpfast.com/blog/free-ai-tools-indie-hackers-2026",
+      "snippet": "# 10 Best Free AI Tools Every Indie Hacker Needs in 2026. The 10 free AI tools indie hackers are using to build and launch products in 2026. Every tool on this list has a verified, ongoing free tier you can use month after month to build, launch, and grow a product without spending a dollar on AI. Here are the 10 free AI tools that cover the full indie hacker workflow: thinking, researching, coding, prototyping, designing, and automating. The pattern that works: use Claude and ChatGPT for thinki",
+      "source_query": "developer workflow tools indie hacker tool",
+      "source_domain": "www.buildmvpfast.com",
+      "status": "filtered_out",
+      "filter_reason": "low_signal_or_aggregator",
+      "analysis_error": null,
+      "analysis": null,
+      "idea": null,
+      "final_score": null
+    },
+    {
+      "id": "946a10a3-9440-4798-ac53-19c70e8e6d31",
+      "title": "50+ Indie Hacker Tools: The $100/Mo Stack",
+      "url": "https://www.vibrantsnap.com/blog/essential-indie-hacker-tools-build-launch",
+      "snippet": "50+ Indie Hacker Tools: The $100/Mo Stack. # 50+ Indie Hacker Tools: The $100/Mo Stack. | **Supabase** | PostgreSQL + Auth | Free tier generous | Full-stack apps |. | **Vercel** | Frontend hosting | Free tier | Next.js projects |. | **Render** | Full platform | Free tier | Simple backend |. | **Canva** | Graphics | Free/$13mo | Social images |. | **Remove.bg** | Background removal | Free tier | Product images |. | **Resend** | Transactional email | Free (3K/mo) | Developer-friendly |. | **Typefu",
+      "source_query": "developer workflow tools indie hacker tool",
+      "source_domain": "www.vibrantsnap.com",
+      "status": "analysis_failed",
+      "filter_reason": null,
+      "analysis_error": "analysis_failed",
+      "analysis": null,
+      "idea": null,
+      "final_score": null
+    },
+    {
+      "id": "c36f5d3f-1959-47c2-ae38-eef1223209d7",
+      "title": "10 Sales Tools Every Indie Hacker and Developer-Entrepreneur Should Know About - DEV Community",
+      "url": "https://dev.to/writerz/10-sales-tools-every-indie-hacker-and-developer-entrepreneur-should-know-about-8k2",
+      "snippet": "Cover image for 10 Sales Tools Every Indie Hacker and Developer-Entrepreneur Should Know About. # 10 Sales Tools Every Indie Hacker and Developer-Entrepreneur Should Know About. The good news: today there are powerful, lightweight sales tools designed for **developers, solopreneurs, and small startup teams**. This post explores **10 sales tools that are practical, affordable, and effective** for developer-entrepreneurs. | Heyou | LinkedIn auto-engagement for team posts | Startups building social",
+      "source_query": "developer workflow tools indie hacker tool",
+      "source_domain": "dev.to",
+      "status": "filtered_out",
+      "filter_reason": "domain_diversity_limit",
+      "analysis_error": null,
+      "analysis": null,
+      "idea": null,
+      "final_score": null
+    },
+    {
+      "id": "c50d9611-402b-4483-b039-17d2cf09259f",
+      "title": "From Idea to Launch — The Ultimate Tool Stack for Indie Hackers",
+      "url": "https://medium.com/@manishmshiva/from-idea-to-launch-the-ultimate-tool-stack-for-indie-hackers-2dc078cbb422",
+      "snippet": "# From Idea to Launch — The Ultimate Tool Stack for Indie Hackers | by Manish Shivanandhan | Medium. # From Idea to Launch — The Ultimate Tool Stack for Indie Hackers. Image 7: Strix: The Open-Source AI Agent for Security Testing. Image 11: Understanding LangChain and LangGraph: A Beginner’s Guide to AI Workflows. Image 13: The Future of AI Coding: Why OpenCode Is Changing How Developers Build. Image 15: Vibe Coding is Over illustration of three ai generated landing pages with the words IT’S OVE",
+      "source_query": "developer workflow tools indie hacker tool",
+      "source_domain": "medium.com",
+      "status": "analysis_failed",
+      "filter_reason": null,
+      "analysis_error": "analysis_failed",
+      "analysis": null,
+      "idea": null,
+      "final_score": null
+    }
+  ]
+}

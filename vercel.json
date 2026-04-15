@@ -1,5 +1,8 @@
 {
   "buildCommand": "npm run build",
-  "outputDirectory": "dist"
+  "outputDirectory": "dist",
+  "rewrites": [
+    { "source": "/book-reader-legacy/:path*", "destination": "/book-reader-legacy/:path*" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }
-

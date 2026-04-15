@@ -1,0 +1,35 @@
+# Model Profiles
+#
+# Two-level structure:
+#   providers: define API endpoints + credentials once
+#   models: define model profiles referencing a provider
+#
+# Switch models in the WebUI (Settings tab) without restarting.
+# api_key supports ${ENV_VAR} to read from .env or shell environment.
+
+default: minimax-m2.7
+
+# ── Providers ────────────────────────────────────────────────────────────
+
+providers:
+  openrouter:
+    base_url: "https://openrouter.ai/api/v1"
+    api_key: "${OPENROUTER_API_KEY}"
+
+# ── Models ───────────────────────────────────────────────────────────────
+
+models:
+  gemma-4:
+    name: "Gemma 4 26B (free)"
+    model_id: "google/gemma-4-26b-a4b-it:free"
+    provider: openrouter
+
+  nemotron-super:
+    name: "Nemotron 3 Super 120B (free)"
+    model_id: "nvidia/nemotron-3-super-120b-a12b:free"
+    provider: openrouter
+
+  minimax-m2.7:
+    name: "minimax/minimax-m2.7"
+    model_id: "minimax/minimax-m2.7"
+    provider: openrouter

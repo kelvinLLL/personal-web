@@ -3,4 +3,13 @@ node_modules/
 portal/node_modules/
 portal/.astro/
 .superpowers/
+.artifacts/
+.codex-artifacts/
+test-results/
 .DS_Store
+frontend/node_modules/
+backend/.venv/
+backend/.env
+backend/data/ideas.json
+__pycache__/
+*.pyc
