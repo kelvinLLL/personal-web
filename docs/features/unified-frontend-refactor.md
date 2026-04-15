@@ -46,6 +46,7 @@ design_notes:
   - Public typography should come from one loaded site font family instead of mixing an unloaded body font with a separate theme font.
   - Production builds must not inherit local-only backend origins such as `localhost` just because a dev convenience env file exists on one machine.
   - Public Ideas reads should fall back to a shipped static snapshot when the deployed frontend has no live `/api/ideas` backend behind it.
+  - Build-time Ideas snapshot preparation must tolerate deployments where `backend/data/ideas.json` is intentionally absent from version control and should reuse the committed frontend snapshot in that case.
 last_updated: 2026-04-15
 ---
 
@@ -90,7 +91,7 @@ Out of scope:
 - `scripts/prepare-daily-nuance-data.mjs`
   - prepares or reuses the generated Daily Nuance snapshot and copies it into `frontend/public/data/daily-nuance/latest.json`
 - `scripts/prepare-ideas-data.mjs`
-  - copies the current Ideas source of truth into `frontend/public/data/ideas/latest.json` so static deployments can still render the public Ideas surface without a live backend
+  - refreshes `frontend/public/data/ideas/latest.json` from backend working data when available, but must also reuse the committed snapshot unchanged on deployments where the backend data file is absent
 - `frontend/src/App.tsx`
   - thin application bootstrap that mounts the router provider
 - `frontend/src/app/layout/RootLayout.tsx`
@@ -231,3 +232,5 @@ Residual risk remains intentionally limited to:
 - 2026-04-15: Started a deployment-hardening follow-up covering three concrete concerns before the next upload: global font clarity, explicit return navigation from Skill Marketplace detail pages, and production-safe frontend build behavior that does not inherit local-only backend origins.
 - 2026-04-15: Extended the deployment-hardening follow-up after static verification showed `/api/ideas` calls collapsing into SPA HTML on pure static hosting; the public Ideas surface now needs a build-time snapshot fallback instead of assuming a live backend.
 - 2026-04-15: Completed the deployment-hardening follow-up by unifying site typography around the loaded Geist family, removing the page-enter text shift, adding a build-time Ideas snapshot mirror plus frontend read fallback for pure static hosting, and keeping the legacy reader route safe behind the Vercel passthrough rewrite.
+- 2026-04-15: Started a Vercel build-failure follow-up after production logs showed `prepare-ideas-data.mjs` still hard-required the gitignored backend seed file instead of reusing the committed frontend Ideas snapshot.
+- 2026-04-15: Completed the Vercel build-failure follow-up by teaching `prepare-ideas-data.mjs` to refresh from backend working data when present but reuse the committed frontend Ideas snapshot when the gitignored source file is absent on deployment.
