@@ -110,6 +110,7 @@ Out of scope:
 - the backend package metadata must not advertise a lower Python floor than the mounted runtime boundary; since the mounted `SuperHaojun` package requires Python `>=3.12`, the backend metadata for this integration slice must match that floor
 - the runtime loader should treat the mounted `apps/superhaojun/src` path as an idempotent boundary mount and avoid duplicating it in `sys.path` across repeated calls
 - the runtime loader must not trust an already-cached `superhaojun.runtime` module from `sys.modules`; this boundary should resolve the mounted submodule entrypoint even when the import cache is polluted by earlier process state
+- any cached non-mounted `superhaojun.*` child module, such as `superhaojun.bus`, should also be treated as pollution because relative imports inside the mounted runtime must resolve only against the mounted package tree
 - the backend lockfile must stay synchronized with the Task 1 package metadata so `uv lock --check` remains a valid reproducibility guard after Python-floor or import-time dependency changes
 - the backend package metadata should track the mounted runtime minima for shared runtime dependencies so the website boundary does not advertise older compatibility than the mounted harness for `openai`, `pydantic`, `pydantic-settings`, `fastapi`, `uvicorn`, and `pyyaml`
 - the site already exposes several behavior classes that matter for agent integration:
@@ -147,3 +148,4 @@ Out of scope:
 - 2026-04-16: Follow-up Task 1 review fixes tightened the backend Python version contract to the mounted runtime floor and expanded the runtime-loader tests to cover idempotent `sys.path` mounting plus clearer transitive dependency import failures.
 - 2026-04-16: Final Task 1 review fixes added the lockfile-sync requirement for this runtime boundary slice, along with a packaging-level regression guard and a regenerated backend `uv.lock`.
 - 2026-04-16: Final Task 1 hardening also requires the loader to ignore polluted `sys.modules` cache entries for `superhaojun.runtime` and keeps the backend dependency minima aligned with the mounted runtime for shared compatibility-critical packages.
+- 2026-04-16: Final Task 1 isolation hardening treats polluted child modules under `superhaojun.*` as boundary violations too, so mounted relative imports cannot accidentally mix cached modules from another package instance.

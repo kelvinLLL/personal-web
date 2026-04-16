@@ -11,6 +11,12 @@ SUPERHAOJUN_SRC_PATH = REPO_ROOT / "apps" / "superhaojun" / "src"
 SUPERHAOJUN_PACKAGE_PATH = SUPERHAOJUN_SRC_PATH / "superhaojun"
 
 
+def _is_within_mounted_package(path_value: str | Path) -> bool:
+    path = Path(path_value).resolve()
+    mounted_package_path = SUPERHAOJUN_PACKAGE_PATH.resolve()
+    return path == mounted_package_path or mounted_package_path in path.parents
+
+
 def _is_mounted_runtime_module(module: Any, runtime_path: Path) -> bool:
     module_file = getattr(module, "__file__", None)
     return module_file is not None and Path(module_file).resolve() == runtime_path.resolve()
@@ -20,22 +26,34 @@ def _is_mounted_package_module(module: Any) -> bool:
     package_paths = getattr(module, "__path__", None)
     if not package_paths:
         return False
-    mounted_package_path = SUPERHAOJUN_PACKAGE_PATH.resolve()
-    return any(Path(package_path).resolve() == mounted_package_path for package_path in package_paths)
+    return any(_is_within_mounted_package(package_path) for package_path in package_paths)
+
+
+def _is_mounted_superhaojun_module(module_name: str, module: Any, runtime_path: Path) -> bool:
+    if module_name == "superhaojun":
+        return _is_mounted_package_module(module)
+
+    if module_name == "superhaojun.runtime":
+        return _is_mounted_runtime_module(module, runtime_path)
+
+    module_file = getattr(module, "__file__", None)
+    return module_file is not None and _is_within_mounted_package(module_file)
 
 
 def _clear_polluted_superhaojun_modules(runtime_path: Path) -> None:
-    runtime_module = sys.modules.get("superhaojun.runtime")
-    package_module = sys.modules.get("superhaojun")
-
-    runtime_is_mounted = runtime_module is None or _is_mounted_runtime_module(runtime_module, runtime_path)
-    package_is_mounted = package_module is None or _is_mounted_package_module(package_module)
-    if runtime_is_mounted and package_is_mounted:
+    superhaojun_modules = {
+        module_name: module
+        for module_name, module in sys.modules.items()
+        if module_name == "superhaojun" or module_name.startswith("superhaojun.")
+    }
+    if all(
+        _is_mounted_superhaojun_module(module_name, module, runtime_path)
+        for module_name, module in superhaojun_modules.items()
+    ):
         return
 
-    for module_name in list(sys.modules):
-        if module_name == "superhaojun" or module_name.startswith("superhaojun."):
-            sys.modules.pop(module_name, None)
+    for module_name in list(superhaojun_modules):
+        sys.modules.pop(module_name, None)
 
     invalidate_caches()
 

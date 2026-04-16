@@ -13,6 +13,7 @@ import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 RUNTIME_MODULE = REPO_ROOT / "apps" / "superhaojun" / "src" / "superhaojun" / "runtime.py"
+BUS_MODULE = REPO_ROOT / "apps" / "superhaojun" / "src" / "superhaojun" / "bus.py"
 BACKEND_PYPROJECT = REPO_ROOT / "backend" / "pyproject.toml"
 BACKEND_LOCK = REPO_ROOT / "backend" / "uv.lock"
 SUPERHAOJUN_PYPROJECT = REPO_ROOT / "apps" / "superhaojun" / "pyproject.toml"
@@ -93,6 +94,26 @@ def test_runtime_loader_ignores_polluted_sys_modules_runtime_cache(
     assert build_runtime is not fake_build_runtime
     assert build_runtime.__module__ == "superhaojun.runtime"
     assert Path(build_runtime.__code__.co_filename).resolve() == RUNTIME_MODULE.resolve()
+
+
+def test_runtime_loader_clears_polluted_child_modules_from_sys_modules(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    runtime_loader = importlib.import_module("services.site_agent.runtime_loader")
+    fake_bus = types.ModuleType("superhaojun.bus")
+    fake_bus.MessageBus = object
+    fake_bus.__file__ = "/tmp/fake-superhaojun-bus.py"
+
+    monkeypatch.setitem(runtime_loader.sys.modules, "superhaojun.bus", fake_bus)
+    runtime_loader.sys.modules.pop("superhaojun.runtime", None)
+
+    build_runtime = runtime_loader.load_superhaojun_build_runtime()
+    mounted_bus = runtime_loader.sys.modules["superhaojun.bus"]
+
+    assert build_runtime.__module__ == "superhaojun.runtime"
+    assert Path(build_runtime.__code__.co_filename).resolve() == RUNTIME_MODULE.resolve()
+    assert mounted_bus is not fake_bus
+    assert Path(mounted_bus.__file__).resolve() == BUS_MODULE.resolve()
 
 
 def test_runtime_loader_raises_clear_error_when_submodule_path_is_missing(
