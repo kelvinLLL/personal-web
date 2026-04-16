@@ -31,7 +31,10 @@ def load_superhaojun_build_runtime() -> Callable[..., Any]:
                 "Mounted SuperHaojun runtime could not be imported from "
                 f"{SUPERHAOJUN_SRC_PATH}."
             ) from exc
-        raise
+        raise RuntimeError(
+            "Mounted SuperHaojun runtime could not be imported because the backend "
+            f"environment is missing dependency '{exc.name or 'unknown'}'."
+        ) from exc
 
     build_runtime = getattr(runtime_module, "build_runtime", None)
     if not callable(build_runtime):

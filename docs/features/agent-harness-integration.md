@@ -104,6 +104,8 @@ Out of scope:
   - `MessageBus` from `superhaojun.bus`
   - runtime messages are emitted with `MessageBus.emit(...)`, and the mounted WebUI forwards them by registering `bus.on(...)` handlers in `superhaojun.webui.server.WebUIState._setup_bus_forwarders()`
 - the website backend currently needs only `openai` as an additional import-time dependency to load the mounted runtime entrypoint; `rich` and `prompt-toolkit` are present in the harness repo but are not imported by this first loader path
+- the backend package metadata must not advertise a lower Python floor than the mounted runtime boundary; since the mounted `SuperHaojun` package requires Python `>=3.12`, the backend metadata for this integration slice must match that floor
+- the runtime loader should treat the mounted `apps/superhaojun/src` path as an idempotent boundary mount and avoid duplicating it in `sys.path` across repeated calls
 - the site already exposes several behavior classes that matter for agent integration:
   - public navigation routes in the SPA
   - CRUD-style idea data routes in the backend
@@ -136,3 +138,4 @@ Out of scope:
 - 2026-04-16: Wrote the approved design spec and first implementation plan for the website-agent slice, covering the floating shell, skill-first contract layer, capability registry, thin website adapter, and the initial `Ideas`-focused integration loop.
 - 2026-04-16: Updated the feature doc for Task 1 so the first code slice is explicitly the mounted runtime boundary: submodule mount, minimal backend import-time dependencies, and a loader test that validates the real `SuperHaojun` runtime entrypoint before any adapter logic lands.
 - 2026-04-16: Validated the mounted `SuperHaojun` runtime contract at submodule SHA `79b1c94f5f7f59a678d5478fa23319b2f75382d2`, then shipped the first backend loader plus tests around that exact import surface and the missing-submodule error path.
+- 2026-04-16: Follow-up Task 1 review fixes tightened the backend Python version contract to the mounted runtime floor and expanded the runtime-loader tests to cover idempotent `sys.path` mounting plus clearer transitive dependency import failures.
