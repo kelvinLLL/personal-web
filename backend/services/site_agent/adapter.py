@@ -61,11 +61,11 @@ class SiteAgentAdapter:
         queue: asyncio.Queue[dict[str, Any] | None] = asyncio.Queue()
         handlers = self._attach_bus_forwarders(runtime, queue)
 
-        agent_task = asyncio.create_task(runtime.agent.handle_user_message(query.message))
+        agent_task = asyncio.create_task(
+            self._run_agent_message(runtime.agent, query.message, queue)
+        )
         try:
             while True:
-                if agent_task.done() and queue.empty():
-                    break
                 item = await queue.get()
                 if item is None:
                     break
@@ -73,6 +73,8 @@ class SiteAgentAdapter:
         finally:
             if not agent_task.done():
                 await agent_task
+            else:
+                agent_task.result()
             self._detach_bus_forwarders(runtime, handlers)
             await self._close_runtime(runtime)
 
@@ -105,7 +107,10 @@ class SiteAgentAdapter:
         permission_checker = getattr(runtime.agent, "permission_checker", None)
         if permission_checker is not None:
             for tool_def in runtime.tool_registry.to_openai_tools():
-                permission_checker.allow_always(tool_def["function"]["name"])
+                tool_name = tool_def["function"]["name"]
+                tool = runtime.tool_registry.get(tool_name)
+                if getattr(tool, "risk_level", "read") == "read":
+                    permission_checker.allow_always(tool_name)
         mcp_manager = getattr(runtime, "mcp_manager", None)
         if mcp_manager is not None and hasattr(mcp_manager, "set_tool_registry"):
             mcp_manager.set_tool_registry(runtime.tool_registry)
@@ -182,6 +187,27 @@ class SiteAgentAdapter:
         agent = getattr(runtime, "agent", None)
         if agent is not None and hasattr(agent, "close"):
             await agent.close()
+
+    async def _run_agent_message(
+        self,
+        agent: Any,
+        message: str,
+        queue: asyncio.Queue[dict[str, Any] | None],
+    ) -> None:
+        try:
+            await agent.handle_user_message(message)
+        except Exception as exc:
+            queue.put_nowait(
+                {
+                    "type": "runtime_error",
+                    "error_type": exc.__class__.__name__,
+                    "message": str(exc),
+                }
+            )
+            queue.put_nowait(None)
+            return
+
+        queue.put_nowait(None)
 
     def _read_skill_text(self, skill_group: str) -> str:
         file_name = SKILL_FILES[skill_group]

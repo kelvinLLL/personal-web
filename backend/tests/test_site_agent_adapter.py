@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 import json
+import asyncio
 from types import SimpleNamespace
 from typing import Any
 
 import pytest
 from services.site_agent.adapter import SiteAgentAdapter, SiteAgentQuery
+from services.site_agent.context import SiteRequestContext
 from services.site_agent.context import resolve_site_request_context
+from services.site_agent.tool_bridge import build_site_tool_registry
 from services.site_agent.tool_bridge import capability_id_to_tool_name
 
 from services.auth import create_token
@@ -42,8 +45,11 @@ class _FakePromptBuilder:
 
 
 class _FakePermissionChecker:
+    def __init__(self) -> None:
+        self.allowed_tools: list[str] = []
+
     def allow_always(self, tool_name: str) -> None:
-        return None
+        self.allowed_tools.append(tool_name)
 
 
 class _FakeAgent:
@@ -107,6 +113,31 @@ class _FakeRuntime:
 
 def _build_fake_runtime(*, working_dir: str) -> _FakeRuntime:
     return _FakeRuntime()
+
+
+class _FailingAgent:
+    def __init__(self, bus: MessageBus, registry: Any, prompt_builder: _FakePromptBuilder) -> None:
+        self.bus = bus
+        self.registry = registry
+        self.prompt_builder = prompt_builder
+        self.permission_checker = _FakePermissionChecker()
+        self.tool_orchestrator = SimpleNamespace(registry=registry)
+
+    async def handle_user_message(self, user_input: str) -> None:
+        raise RuntimeError("agent exploded before emitting events")
+
+    async def close(self) -> None:
+        return None
+
+
+class _FailingRuntime(_FakeRuntime):
+    def __init__(self) -> None:
+        super().__init__()
+        self.agent = _FailingAgent(self.bus, self.tool_registry, self.prompt_builder)
+
+
+def _build_failing_runtime(*, working_dir: str) -> _FailingRuntime:
+    return _FailingRuntime()
 
 
 async def _collect_events(
@@ -234,6 +265,64 @@ async def test_workflow_start_without_auth_is_rejected_clearly(
     assert result["ok"] is False
     assert result["capability_id"] == "ideas.workflow.start"
     assert result["error_code"] == "auth_required"
+
+
+@pytest.mark.asyncio
+async def test_agent_failure_before_bus_events_returns_structured_error_and_terminates(
+    ideas_store,
+    workflow_runs_store,
+) -> None:
+    adapter = SiteAgentAdapter(runtime_builder=_build_failing_runtime)
+
+    events = await asyncio.wait_for(
+        _collect_events(
+            adapter,
+            SiteAgentQuery(message="hello", route="/"),
+            ideas_store=ideas_store,
+            workflow_runs_store=workflow_runs_store,
+        ),
+        timeout=1,
+    )
+
+    assert events == [
+        {
+            "type": "runtime_error",
+            "error_type": "RuntimeError",
+            "message": "agent exploded before emitting events",
+        }
+    ]
+
+
+def test_adapter_only_auto_allows_read_tools(
+    ideas_store,
+    workflow_runs_store,
+) -> None:
+    adapter = SiteAgentAdapter(runtime_builder=_build_fake_runtime)
+    runtime = _build_fake_runtime(working_dir=adapter.working_dir)
+    context = SiteRequestContext(
+        route="/ideas",
+        page_type="ideas",
+        visible_entity_id=None,
+        visible_entity_slug=None,
+        is_authenticated=False,
+        is_admin=False,
+        inline_capability_groups=("using-personal-web", "ideas-read", "ideas-workflow"),
+        bearer_token_subject=None,
+    )
+
+    runtime.tool_registry = build_site_tool_registry(
+        capability_ids=adapter._select_capability_ids(context),
+        context=context,
+        ideas_store=ideas_store,
+        workflow_runs_store=workflow_runs_store,
+    )
+
+    adapter._attach_runtime_registry(runtime)
+
+    assert capability_id_to_tool_name("site.intro") in runtime.agent.permission_checker.allowed_tools
+    assert capability_id_to_tool_name("ideas.list") in runtime.agent.permission_checker.allowed_tools
+    assert capability_id_to_tool_name("ideas.workflow.start") not in runtime.agent.permission_checker.allowed_tools
+    assert capability_id_to_tool_name("ideas.workflow.get_run") not in runtime.agent.permission_checker.allowed_tools
 
 
 @pytest.mark.asyncio
