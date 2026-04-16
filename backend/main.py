@@ -4,8 +4,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from config import settings
-from routers import auth, ideas, models, proxy, workflow
+from routers import agent, auth, ideas, models, proxy, workflow
 from services.ideas_store import ideas_store
+from services.site_agent.adapter import SiteAgentAdapter
 from services.workflow_runs_store import workflow_runs_store
 
 
@@ -19,6 +20,7 @@ def create_app(*, ideas_store_instance=None, workflow_runs_store_instance=None) 
 
     app.state.ideas_store = ideas_store_instance or ideas_store
     app.state.workflow_runs_store = workflow_runs_store_instance or workflow_runs_store
+    app.state.site_agent_adapter = SiteAgentAdapter()
 
     app.add_middleware(
         CORSMiddleware,
@@ -30,6 +32,7 @@ def create_app(*, ideas_store_instance=None, workflow_runs_store_instance=None) 
     )
 
     app.include_router(auth.router)
+    app.include_router(agent.router)
     app.include_router(models.router)
     app.include_router(proxy.router)
     app.include_router(ideas.router)

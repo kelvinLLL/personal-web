@@ -11,14 +11,23 @@ entrypoints:
   - backend/services/site_agent/runtime_loader.py
   - backend/services/site_agent/models.py
   - backend/services/site_agent/registry.py
+  - backend/services/site_agent/context.py
+  - backend/services/site_agent/capabilities/site.py
+  - backend/services/site_agent/capabilities/ideas.py
+  - backend/services/site_agent/capabilities/content.py
+  - backend/services/site_agent/capability_handlers.py
+  - backend/services/site_agent/tool_bridge.py
+  - backend/services/site_agent/adapter.py
   - backend/services/site_agent/skills/using-personal-web.md
   - backend/services/site_agent/skills/ideas-read.md
   - backend/services/site_agent/skills/ideas-workflow.md
   - backend/services/site_agent/skills/content-read.md
   - backend/tests/test_site_agent_runtime_loader.py
   - backend/tests/test_site_agent_registry.py
+  - backend/tests/test_site_agent_adapter.py
   - docs/superpowers/plans/2026-04-14-product-backlog.md
   - backend/main.py
+  - backend/routers/agent.py
   - backend/routers/ideas.py
   - backend/routers/workflow.py
   - backend/services/workflow_runs_store.py
@@ -36,7 +45,7 @@ design_notes:
   - Long-running operations should be modeled as runs with progress and terminal states, not as opaque single-response mutations.
   - The feature boundary includes discoverability, schema design, permissions, observability, and non-committed local configuration handoff, not only the harness runtime itself.
   - The public frontend entry should be a floating chat shell that supports both inline page-local interaction and explicit user-visible page transitions when work needs a larger surface.
-last_updated: 2026-04-16
+last_updated: 2026-04-17
 ---
 
 # Agent Harness Integration
@@ -84,16 +93,34 @@ Out of scope:
   - minimal typed capability metadata models for the first website-agent registry slice, keeping stable ids, risk metadata, and skill references explicit
 - `backend/services/site_agent/registry.py`
   - first capability registry slice that maps approved capability ids to stable metadata without executing handlers yet
+- `backend/services/site_agent/context.py`
+  - request-context resolver that turns a website route plus optional bearer token into page-aware capability context for the adapter
+- `backend/services/site_agent/capabilities/site.py`
+  - pure site-owned handlers for intro text and navigation recommendations that stay independent from runtime concerns
+- `backend/services/site_agent/capabilities/ideas.py`
+  - pure ideas and workflow handlers that reuse existing stores and auth-aware policy checks instead of duplicating route logic
+- `backend/services/site_agent/capabilities/content.py`
+  - read-only content handlers for the shipped `daily-nuance` snapshot and the backend-owned mirror of the current skill marketplace seed
+- `backend/services/site_agent/capability_handlers.py`
+  - website-owned capability registry to handler binding so tools can execute real site behavior through one stable map
+- `backend/services/site_agent/tool_bridge.py`
+  - thin bridge that wraps website capability handlers as `SuperHaojun` `Tool` instances with JSON-schema inputs and stringified structured results
+- `backend/services/site_agent/adapter.py`
+  - thin website adapter that builds a per-request runtime, injects selected website skills, registers only relevant tools, and forwards runtime bus events to website transport
 - `backend/services/site_agent/skills/*.md`
   - concise skill assets that describe when to use the website-agent skills, which capabilities they cover, and when inline vs transition mode fits best
 - `backend/tests/test_site_agent_runtime_loader.py`
   - regression test for the mounted runtime boundary, covering the real import path and the missing-submodule error path
 - `backend/tests/test_site_agent_registry.py`
   - narrow regression tests for the approved first capability slice so later adapter work starts from a stable contract
+- `backend/tests/test_site_agent_adapter.py`
+  - adapter-focused regression tests for route-aware skill injection, auth-gated workflow behavior, executable content reads, and structured runtime event streaming
 - `docs/superpowers/plans/2026-04-14-product-backlog.md`
   - existing backlog note that already frames this work as `harness` integration plus a later chatbot UI slice
 - `backend/main.py`
   - backend composition root where today's routers define the currently reachable site capabilities
+- `backend/routers/agent.py`
+  - first website-agent transport route that accepts query requests, resolves auth/context, and streams runtime events over SSE
 - `backend/routers/ideas.py`
   - current CRUD-style idea operations that are likely candidates for future read/write tool exposure
 - `backend/routers/workflow.py`
@@ -154,6 +181,22 @@ Out of scope:
   - ideas read capabilities align with the existing `/api/ideas`, `/api/ideas/meta`, and `/api/ideas/{idea_id}` routes
   - workflow capabilities for `start` and `get_run` are registered as future-facing metadata only in this task
   - content capabilities point at the current `daily-nuance` snapshot and the declared `skill-marketplace` catalog surface
+- the third implementation slice turns the metadata-only registry into a real website-owned execution path:
+  - resolve a compact site context from route, page type, visible entity hints, and bearer-token subject
+  - keep capability handlers pure and website-owned so the runtime only sees typed tools, not hidden website branches
+  - use the verified backend token path to determine `is_authenticated` and `is_admin`, and let privileged handlers consult that resolved context instead of trusting frontend flags
+  - mirror the current skill marketplace seed into a small backend-owned read view instead of parsing frontend TypeScript at request time
+  - keep workflow start conservative for now by returning a structured privileged-path result from the capability handler unless a broader async orchestration refactor becomes necessary
+- the adapter/runtime contract for Task 3 stays intentionally thin:
+  - build or reuse a runtime through `load_superhaojun_build_runtime()`
+  - inject only the relevant website skill text into prompt custom instructions for the current request
+  - register only the website tools that match the resolved capability groups for the active page context
+  - listen to `MessageBus` events and expose them as structured SSE frames without adding website-only execution shortcuts outside the runtime path
+- the first backend transport surface for this feature is `POST /api/agent/query`:
+  - frontend may send the existing admin bearer token when available
+  - backend resolves that token with the same auth helper used by protected routes
+  - anonymous requests still keep read-only intro and navigation capability paths available
+  - privileged capabilities such as workflow start remain backend-authorized even if the frontend claims admin state
 - the best current precedent in this repo is the `Ideas` workflow refactor:
   - it distinguishes durable content from workflow run artifacts
   - it treats long-running work as staged execution rather than one blind mutation
@@ -175,3 +218,5 @@ Out of scope:
 - 2026-04-16: Final Task 1 hardening also requires the loader to ignore polluted `sys.modules` cache entries for `superhaojun.runtime` and keeps the backend dependency minima aligned with the mounted runtime for shared compatibility-critical packages.
 - 2026-04-16: Final Task 1 isolation hardening treats polluted child modules under `superhaojun.*` as boundary violations too, so mounted relative imports cannot accidentally mix cached modules from another package instance.
 - 2026-04-16: Task 2 narrows the next slice to a metadata-only capability registry plus the first four skill assets, covering exactly the approved intro, navigation, ideas read, workflow-run metadata, and content catalog capabilities.
+- 2026-04-17: Task 3 expands the website-owned boundary with route-aware context resolution, pure capability handlers, a thin tool bridge and adapter, and the first `POST /api/agent/query` SSE transport.
+- 2026-04-17: The first `ideas.workflow.start` implementation stays conservative by returning an auth-gated transition result instead of launching a background workflow run from the agent transport.
