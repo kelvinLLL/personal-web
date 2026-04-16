@@ -31,6 +31,8 @@ entrypoints:
   - backend/routers/ideas.py
   - backend/routers/workflow.py
   - backend/services/workflow_runs_store.py
+  - frontend/src/app/layout/RootLayout.tsx
+  - frontend/src/features/site-agent
   - frontend/src/app/router/router.tsx
   - frontend/src/core/site/routes.ts
 hard_constraints:
@@ -127,6 +129,10 @@ Out of scope:
   - current long-running workflow surface, including streaming behavior, that foreshadows how harness-triggered actions may need run semantics
 - `backend/services/workflow_runs_store.py`
   - existing run-artifact persistence layer that is relevant to auditability and resumable agent operations
+- `frontend/src/app/layout/RootLayout.tsx`
+  - persistent public layout boundary where the floating site-agent shell should mount outside page feature slices so it survives route changes
+- `frontend/src/features/site-agent/`
+  - frontend-only shell boundary for the floating launcher, compact panel, route context helper, shell state store, typed message parts, and the streaming client for `POST /api/agent/query`
 - `frontend/src/core/site/routes.ts`
   - canonical public route registry for human navigation, useful for separating UI navigation from agent action boundaries
 - `frontend/src/app/router/router.tsx`
@@ -176,6 +182,12 @@ Out of scope:
   - a floating, draggable chat entry should exist across the site
   - users should be able to complete some help and operation flows entirely inside the floating shell
   - users should also be able to accept explicit page-jump recommendations when a larger product surface is the better fit
+- the shipped Task 4 frontend slice stays intentionally narrow:
+  - mount the shell once from `RootLayout`
+  - keep the launcher visible across the public SPA routes
+  - derive a compact page label from the current pathname instead of adding a dedicated agent route
+  - use a local store for shell state, pending request state, route context, suggestions, and run-card placeholders
+  - keep message rendering skeletal but typed so later inline/transition rendering can extend the same boundary
 - the first registry slice should mirror existing real surfaces:
   - site intro and navigation align with the public SPA route map
   - ideas read capabilities align with the existing `/api/ideas`, `/api/ideas/meta`, and `/api/ideas/{idea_id}` routes
@@ -220,3 +232,4 @@ Out of scope:
 - 2026-04-16: Task 2 narrows the next slice to a metadata-only capability registry plus the first four skill assets, covering exactly the approved intro, navigation, ideas read, workflow-run metadata, and content catalog capabilities.
 - 2026-04-17: Task 3 expands the website-owned boundary with route-aware context resolution, pure capability handlers, a thin tool bridge and adapter, and the first `POST /api/agent/query` SSE transport.
 - 2026-04-17: The first `ideas.workflow.start` implementation stays conservative by returning an auth-gated transition result instead of launching a background workflow run from the agent transport.
+- 2026-04-17: Task 4 ships the frontend shell skeleton with a persistent `RootLayout` mount, a local shell store, typed message parts, a thin SSE client, and narrow UI tests that explicitly keep v1 on a floating launcher/panel instead of a dedicated full-page agent route.
