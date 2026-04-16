@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Activity, Sparkles, X } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -9,6 +9,35 @@ import { SiteAgentMessageList } from '@/features/site-agent/components/SiteAgent
 import { SiteAgentRunCard } from '@/features/site-agent/components/SiteAgentRunCard'
 import { SiteAgentSuggestionList } from '@/features/site-agent/components/SiteAgentSuggestionList'
 import { useSiteAgentStore } from '@/features/site-agent/store/useSiteAgentStore'
+
+const PANEL_MARGIN = 16
+const PANEL_MAX_WIDTH = 22 * 16
+const PANEL_MAX_HEIGHT = 34 * 16
+const PANEL_ANCHOR_OFFSET_X = 72
+const PANEL_ANCHOR_GAP_Y = 24
+const SERVER_VIEWPORT = { width: 1280, height: 800 }
+
+function getViewportSize() {
+  if (typeof window === 'undefined') {
+    return SERVER_VIEWPORT
+  }
+
+  return {
+    width: window.innerWidth,
+    height: window.innerHeight,
+  }
+}
+
+function clamp(value: number, minimum: number, maximum: number) {
+  return Math.min(Math.max(value, minimum), maximum)
+}
+
+function isAbortError(error: unknown) {
+  return (
+    (error instanceof DOMException && error.name === 'AbortError') ||
+    (error instanceof Error && error.name === 'AbortError')
+  )
+}
 
 export function SiteAgentPanel() {
   const panelState = useSiteAgentStore((state) => state.panelState)
@@ -22,28 +51,99 @@ export function SiteAgentPanel() {
   const suggestedTransitions = useSiteAgentStore((state) => state.suggestedTransitions)
   const activeRunCards = useSiteAgentStore((state) => state.activeRunCards)
   const startPendingRequest = useSiteAgentStore((state) => state.startPendingRequest)
+  const finishPendingRequest = useSiteAgentStore((state) => state.finishPendingRequest)
   const failPendingRequest = useSiteAgentStore((state) => state.failPendingRequest)
   const applyStreamEvent = useSiteAgentStore((state) => state.applyStreamEvent)
+  const [viewportSize, setViewportSize] = useState(getViewportSize)
+  const activeRequestRef = useRef<{
+    controller: AbortController
+    requestId: number
+  } | null>(null)
+  const requestIdRef = useRef(0)
+
+  useEffect(() => {
+    function handleResize() {
+      setViewportSize(getViewportSize())
+    }
+
+    window.addEventListener('resize', handleResize)
+    return () => {
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [])
+
+  function cancelActiveRequest() {
+    const activeRequest = activeRequestRef.current
+    if (!activeRequest) {
+      return
+    }
+
+    activeRequest.controller.abort()
+    activeRequestRef.current = null
+    useSiteAgentStore.getState().finishPendingRequest()
+  }
+
+  useEffect(() => {
+    if (panelState !== 'open') {
+      cancelActiveRequest()
+    }
+  }, [panelState])
+
+  useEffect(
+    () => () => {
+      cancelActiveRequest()
+    },
+    [],
+  )
 
   const panelStyle = useMemo(() => {
     if (!floatingPosition) {
       return undefined
     }
 
-    const viewportWidth = typeof window === 'undefined' ? 1280 : window.innerWidth
-    const viewportHeight = typeof window === 'undefined' ? 800 : window.innerHeight
-    const left = Math.min(Math.max(16, floatingPosition.x - 280), viewportWidth - 384)
-    const top = Math.min(Math.max(72, floatingPosition.y - 480), viewportHeight - 520)
+    const panelWidth = Math.min(PANEL_MAX_WIDTH, Math.max(0, viewportSize.width - PANEL_MARGIN * 2))
+    const panelHeight = Math.min(PANEL_MAX_HEIGHT, Math.max(0, viewportSize.height - PANEL_MARGIN * 2))
+    const left = clamp(
+      floatingPosition.x - panelWidth + PANEL_ANCHOR_OFFSET_X,
+      PANEL_MARGIN,
+      Math.max(PANEL_MARGIN, viewportSize.width - panelWidth - PANEL_MARGIN),
+    )
+    const top = clamp(
+      floatingPosition.y - panelHeight - PANEL_ANCHOR_GAP_Y,
+      PANEL_MARGIN,
+      Math.max(PANEL_MARGIN, viewportSize.height - panelHeight - PANEL_MARGIN),
+    )
 
-    return { left: `${left}px`, top: `${top}px` }
-  }, [floatingPosition])
+    return {
+      left: `${left}px`,
+      top: `${top}px`,
+      maxHeight: `${panelHeight}px`,
+    }
+  }, [floatingPosition, viewportSize.height, viewportSize.width])
 
   if (panelState !== 'open') {
     return null
   }
 
   async function handleSubmit(message: string) {
+    const existingRequest = activeRequestRef.current
+    if (existingRequest) {
+      existingRequest.controller.abort()
+    }
+
+    requestIdRef.current += 1
+    const requestId = requestIdRef.current
+    const controller = new AbortController()
+    activeRequestRef.current = { controller, requestId }
     startPendingRequest(message)
+
+    function isCurrentRequest() {
+      return (
+        activeRequestRef.current?.requestId === requestId &&
+        activeRequestRef.current?.controller === controller &&
+        !controller.signal.aborted
+      )
+    }
 
     try {
       await streamSiteAgentQuery(
@@ -53,23 +153,46 @@ export function SiteAgentPanel() {
         },
         {
           token: authToken,
-          onEvent: applyStreamEvent,
+          signal: controller.signal,
+          onEvent: (event) => {
+            if (!isCurrentRequest()) {
+              return
+            }
+
+            applyStreamEvent(event)
+          },
         },
       )
     } catch (error) {
+      if (!isCurrentRequest()) {
+        return
+      }
+
+      activeRequestRef.current = null
+
+      if (controller.signal.aborted || isAbortError(error)) {
+        finishPendingRequest()
+        return
+      }
+
       failPendingRequest(
         error instanceof Error ? error.message : 'The site agent request failed.',
       )
       return
     }
 
+    if (!isCurrentRequest()) {
+      return
+    }
+
+    activeRequestRef.current = null
     useSiteAgentStore.getState().finishPendingRequest()
   }
 
   return (
     <Card
       aria-label="Site agent"
-      className="fixed z-50 w-[min(22rem,calc(100vw-2rem))] border border-stone-200/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(244,244,245,0.98))] shadow-2xl shadow-stone-900/10 backdrop-blur"
+      className="fixed z-50 w-[min(22rem,calc(100vw-2rem))] max-h-[min(34rem,calc(100vh-2rem))] border border-stone-200/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(244,244,245,0.98))] shadow-2xl shadow-stone-900/10 backdrop-blur"
       role="dialog"
       style={panelStyle}
     >
@@ -97,14 +220,17 @@ export function SiteAgentPanel() {
             size="icon-sm"
             type="button"
             variant="ghost"
-            onClick={() => closePanel()}
+            onClick={() => {
+              cancelActiveRequest()
+              closePanel()
+            }}
           >
             <X className="size-4" />
           </Button>
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-4">
+      <CardContent className="min-h-0 flex-1 space-y-4 overflow-y-auto">
         <SiteAgentMessageList messages={messages} />
 
         {pendingRequest ? (

@@ -161,6 +161,76 @@ describe('SiteAgent shell', () => {
     })
   })
 
+  it('aborts an in-flight request and ignores late events after the panel closes', async () => {
+    const pendingStreams: Array<{
+      signal?: AbortSignal
+      onEvent?: (event: { type: string; text?: string }) => void
+    }> = []
+    const user = userEvent.setup()
+
+    streamSiteAgentQueryMock.mockImplementation(
+      (_payload, options?: { signal?: AbortSignal; onEvent?: (event: { type: string; text?: string }) => void }) =>
+        new Promise<void>((resolve, reject) => {
+          pendingStreams.push({
+            signal: options?.signal,
+            onEvent: options?.onEvent,
+          })
+
+          if (!options?.signal) {
+            return
+          }
+
+          const abortWithError = () => {
+            reject(new DOMException('The operation was aborted.', 'AbortError'))
+          }
+
+          if (options.signal.aborted) {
+            abortWithError()
+            return
+          }
+
+          options.signal.addEventListener('abort', abortWithError, { once: true })
+        }),
+    )
+
+    renderRoute('/')
+    await user.click(await screen.findByRole('button', { name: 'Open site agent' }))
+    await user.type(screen.getByRole('textbox', { name: 'Ask the site agent' }), 'cancel me')
+    await user.click(screen.getByRole('button', { name: 'Send message' }))
+
+    expect(useSiteAgentStore.getState().requestState).toBe('streaming')
+    expect(pendingStreams).toHaveLength(1)
+
+    await user.click(screen.getByRole('button', { name: 'Close site agent' }))
+
+    await waitFor(() => {
+      expect(pendingStreams[0]?.signal?.aborted).toBe(true)
+      expect(useSiteAgentStore.getState().requestState).toBe('idle')
+      expect(useSiteAgentStore.getState().pendingRequest).toBeNull()
+    })
+
+    act(() => {
+      pendingStreams[0]?.onEvent?.({
+        type: 'text_delta',
+        text: 'stale assistant reply',
+      })
+      pendingStreams[0]?.onEvent?.({
+        type: 'request_complete',
+      })
+    })
+
+    expect(
+      useSiteAgentStore
+        .getState()
+        .messages.some(
+          (message) =>
+            message.parts.some(
+              (part) => part.type === 'text' && part.text.includes('stale assistant reply'),
+            ),
+        ),
+    ).toBe(false)
+  })
+
   it('re-clamps the floating launcher position on viewport resize', async () => {
     renderRoute('/')
     const launcher = await screen.findByRole('button', { name: 'Open site agent' })
@@ -175,6 +245,25 @@ describe('SiteAgent shell', () => {
       expect(launcher.parentElement).toHaveStyle({
         left: '280px',
         top: '200px',
+      })
+    })
+  })
+
+  it('keeps the panel on-screen inside a very small viewport', async () => {
+    const user = userEvent.setup()
+    setViewport(280, 220)
+    renderRoute('/')
+
+    act(() => {
+      useSiteAgentStore.getState().setFloatingPosition({ x: 264, y: 212 })
+    })
+
+    await user.click(await screen.findByRole('button', { name: 'Open site agent' }))
+
+    await waitFor(() => {
+      expect(screen.getByRole('dialog', { name: 'Site agent' })).toHaveStyle({
+        left: '16px',
+        top: '16px',
       })
     })
   })
