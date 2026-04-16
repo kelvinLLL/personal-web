@@ -9,7 +9,14 @@ entrypoints:
   - backend/pyproject.toml
   - backend/uv.lock
   - backend/services/site_agent/runtime_loader.py
+  - backend/services/site_agent/models.py
+  - backend/services/site_agent/registry.py
+  - backend/services/site_agent/skills/using-personal-web.md
+  - backend/services/site_agent/skills/ideas-read.md
+  - backend/services/site_agent/skills/ideas-workflow.md
+  - backend/services/site_agent/skills/content-read.md
   - backend/tests/test_site_agent_runtime_loader.py
+  - backend/tests/test_site_agent_registry.py
   - docs/superpowers/plans/2026-04-14-product-backlog.md
   - backend/main.py
   - backend/routers/ideas.py
@@ -73,8 +80,16 @@ Out of scope:
   - reproducible backend package state for this slice, which must stay in sync with the Python floor and dependency metadata used to import the mounted runtime boundary
 - `backend/services/site_agent/runtime_loader.py`
   - thin loader that resolves the mounted harness path and imports the canonical `build_runtime` entrypoint without re-exporting more runtime internals
+- `backend/services/site_agent/models.py`
+  - minimal typed capability metadata models for the first website-agent registry slice, keeping stable ids, risk metadata, and skill references explicit
+- `backend/services/site_agent/registry.py`
+  - first capability registry slice that maps approved capability ids to stable metadata without executing handlers yet
+- `backend/services/site_agent/skills/*.md`
+  - concise skill assets that describe when to use the website-agent skills, which capabilities they cover, and when inline vs transition mode fits best
 - `backend/tests/test_site_agent_runtime_loader.py`
   - regression test for the mounted runtime boundary, covering the real import path and the missing-submodule error path
+- `backend/tests/test_site_agent_registry.py`
+  - narrow regression tests for the approved first capability slice so later adapter work starts from a stable contract
 - `docs/superpowers/plans/2026-04-14-product-backlog.md`
   - existing backlog note that already frames this work as `harness` integration plus a later chatbot UI slice
 - `backend/main.py`
@@ -100,6 +115,11 @@ Out of scope:
   - validate the actual runtime import contract from the mounted code
   - add a backend loader that imports `build_runtime` from the mounted source tree and fails clearly when the submodule is absent
   - keep adapter, registry, and tool-bridge logic out of this task so the external/runtime boundary is proven before higher-level integration begins
+- the second implementation slice stays metadata-only and still intentionally narrow:
+  - define a small typed registry contract for website-agent capabilities
+  - register exactly the first approved capability ids for site intro/navigation, ideas reads, first workflow run metadata, and two content read surfaces
+  - add the first markdown skill assets that describe when to stay inline vs when to transition into a full page
+  - do not execute handlers, bridge tools, or expose write capabilities yet
 - the validated mounted runtime contract at the current submodule SHA is:
   - `build_runtime` from `superhaojun.runtime`
   - `Tool` from `superhaojun.tools.base`
@@ -129,6 +149,11 @@ Out of scope:
   - a floating, draggable chat entry should exist across the site
   - users should be able to complete some help and operation flows entirely inside the floating shell
   - users should also be able to accept explicit page-jump recommendations when a larger product surface is the better fit
+- the first registry slice should mirror existing real surfaces:
+  - site intro and navigation align with the public SPA route map
+  - ideas read capabilities align with the existing `/api/ideas`, `/api/ideas/meta`, and `/api/ideas/{idea_id}` routes
+  - workflow capabilities for `start` and `get_run` are registered as future-facing metadata only in this task
+  - content capabilities point at the current `daily-nuance` snapshot and the declared `skill-marketplace` catalog surface
 - the best current precedent in this repo is the `Ideas` workflow refactor:
   - it distinguishes durable content from workflow run artifacts
   - it treats long-running work as staged execution rather than one blind mutation
@@ -149,3 +174,4 @@ Out of scope:
 - 2026-04-16: Final Task 1 review fixes added the lockfile-sync requirement for this runtime boundary slice, along with a packaging-level regression guard and a regenerated backend `uv.lock`.
 - 2026-04-16: Final Task 1 hardening also requires the loader to ignore polluted `sys.modules` cache entries for `superhaojun.runtime` and keeps the backend dependency minima aligned with the mounted runtime for shared compatibility-critical packages.
 - 2026-04-16: Final Task 1 isolation hardening treats polluted child modules under `superhaojun.*` as boundary violations too, so mounted relative imports cannot accidentally mix cached modules from another package instance.
+- 2026-04-16: Task 2 narrows the next slice to a metadata-only capability registry plus the first four skill assets, covering exactly the approved intro, navigation, ideas read, workflow-run metadata, and content catalog capabilities.
