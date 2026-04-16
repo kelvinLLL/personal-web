@@ -109,7 +109,9 @@ Out of scope:
 - the website backend currently needs only `openai` as an additional import-time dependency to load the mounted runtime entrypoint; `rich` and `prompt-toolkit` are present in the harness repo but are not imported by this first loader path
 - the backend package metadata must not advertise a lower Python floor than the mounted runtime boundary; since the mounted `SuperHaojun` package requires Python `>=3.12`, the backend metadata for this integration slice must match that floor
 - the runtime loader should treat the mounted `apps/superhaojun/src` path as an idempotent boundary mount and avoid duplicating it in `sys.path` across repeated calls
+- the runtime loader must not trust an already-cached `superhaojun.runtime` module from `sys.modules`; this boundary should resolve the mounted submodule entrypoint even when the import cache is polluted by earlier process state
 - the backend lockfile must stay synchronized with the Task 1 package metadata so `uv lock --check` remains a valid reproducibility guard after Python-floor or import-time dependency changes
+- the backend package metadata should track the mounted runtime minima for shared runtime dependencies so the website boundary does not advertise older compatibility than the mounted harness for `openai`, `pydantic`, `pydantic-settings`, `fastapi`, `uvicorn`, and `pyyaml`
 - the site already exposes several behavior classes that matter for agent integration:
   - public navigation routes in the SPA
   - CRUD-style idea data routes in the backend
@@ -144,3 +146,4 @@ Out of scope:
 - 2026-04-16: Validated the mounted `SuperHaojun` runtime contract at submodule SHA `79b1c94f5f7f59a678d5478fa23319b2f75382d2`, then shipped the first backend loader plus tests around that exact import surface and the missing-submodule error path.
 - 2026-04-16: Follow-up Task 1 review fixes tightened the backend Python version contract to the mounted runtime floor and expanded the runtime-loader tests to cover idempotent `sys.path` mounting plus clearer transitive dependency import failures.
 - 2026-04-16: Final Task 1 review fixes added the lockfile-sync requirement for this runtime boundary slice, along with a packaging-level regression guard and a regenerated backend `uv.lock`.
+- 2026-04-16: Final Task 1 hardening also requires the loader to ignore polluted `sys.modules` cache entries for `superhaojun.runtime` and keeps the backend dependency minima aligned with the mounted runtime for shared compatibility-critical packages.
