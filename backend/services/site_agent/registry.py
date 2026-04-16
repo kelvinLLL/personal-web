@@ -32,7 +32,7 @@ _CAPABILITIES: tuple[SiteAgentCapability, ...] = (
     SiteAgentCapability(
         id="ideas.list",
         title="List ideas",
-        description="Read the current ideas collection from the backend ideas surface.",
+        description="Browse the current ideas collection.",
         capability_type=CapabilityType.READ,
         risk=CapabilityRisk.SAFE,
         mode=CapabilityMode.INLINE,
@@ -42,7 +42,7 @@ _CAPABILITIES: tuple[SiteAgentCapability, ...] = (
     SiteAgentCapability(
         id="ideas.get",
         title="Get one idea",
-        description="Read one idea by id from the existing ideas backend route.",
+        description="Read the details for a specific idea.",
         capability_type=CapabilityType.READ,
         risk=CapabilityRisk.SAFE,
         mode=CapabilityMode.INLINE,
@@ -52,7 +52,7 @@ _CAPABILITIES: tuple[SiteAgentCapability, ...] = (
     SiteAgentCapability(
         id="ideas.meta",
         title="Get idea metadata",
-        description="Read idea counts and metadata from the existing ideas meta surface.",
+        description="Check idea counts and metadata for the current collection.",
         capability_type=CapabilityType.READ,
         risk=CapabilityRisk.SAFE,
         mode=CapabilityMode.INLINE,
@@ -62,7 +62,7 @@ _CAPABILITIES: tuple[SiteAgentCapability, ...] = (
     SiteAgentCapability(
         id="ideas.workflow.start",
         title="Start the ideas workflow",
-        description="Register the workflow-start action as a privileged, transition-first capability.",
+        description="Start an ideas workflow run for the current direction.",
         capability_type=CapabilityType.WORKFLOW,
         risk=CapabilityRisk.PRIVILEGED,
         mode=CapabilityMode.TRANSITION,
@@ -72,17 +72,17 @@ _CAPABILITIES: tuple[SiteAgentCapability, ...] = (
     SiteAgentCapability(
         id="ideas.workflow.get_run",
         title="Get an ideas workflow run",
-        description="Look up the status of a workflow run once the user is already operating in the ideas flow.",
+        description="Check the structured status of an existing ideas workflow run.",
         capability_type=CapabilityType.WORKFLOW,
         risk=CapabilityRisk.PRIVILEGED,
-        mode=CapabilityMode.TRANSITION,
+        mode=CapabilityMode.INLINE,
         transition_route="/ideas",
         skill_asset="ideas-workflow.md",
     ),
     SiteAgentCapability(
         id="content.daily_nuance.latest",
         title="Read latest Daily Nuance",
-        description="Read the latest Daily Nuance snapshot that is mirrored into site assets.",
+        description="Read the latest Daily Nuance snapshot.",
         capability_type=CapabilityType.READ,
         risk=CapabilityRisk.SAFE,
         mode=CapabilityMode.INLINE,
@@ -92,7 +92,7 @@ _CAPABILITIES: tuple[SiteAgentCapability, ...] = (
     SiteAgentCapability(
         id="content.skill_marketplace.catalog",
         title="Read the skill marketplace catalog",
-        description="Declare the first skill marketplace catalog surface for later handler wiring.",
+        description="Browse the current skill marketplace catalog.",
         capability_type=CapabilityType.READ,
         risk=CapabilityRisk.SAFE,
         mode=CapabilityMode.TRANSITION,
