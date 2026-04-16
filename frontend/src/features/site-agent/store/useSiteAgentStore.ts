@@ -27,6 +27,7 @@ interface SiteAgentStoreState {
   closePanel: () => void
   setFloatingPosition: (position: SiteAgentPosition) => void
   ensureFloatingPosition: (viewport?: { width: number; height: number }) => void
+  clampFloatingPosition: (viewport?: { width: number; height: number }) => void
   syncRouteContext: (context: SiteAgentPageContext) => void
   syncAuthToken: (token?: string) => void
   startPendingRequest: (message: string) => void
@@ -50,6 +51,23 @@ const initialState = {
   pendingRequest: null as SiteAgentPendingRequest | null,
   suggestedTransitions: [] as SiteAgentNavigationSuggestion[],
   activeRunCards: [] as SiteAgentWorkflowRunCard[],
+}
+
+function clampPosition(
+  position: SiteAgentPosition,
+  viewport?: { width: number; height: number },
+): SiteAgentPosition {
+  const width = viewport?.width ?? window.innerWidth
+  const height = viewport?.height ?? window.innerHeight
+  const minX = 16
+  const minY = 80
+  const maxX = Math.max(minX, width - 80)
+  const maxY = Math.max(minY, height - 80)
+
+  return {
+    x: Math.min(Math.max(minX, position.x), maxX),
+    y: Math.min(Math.max(minY, position.y), maxY),
+  }
 }
 
 let messageCounter = 0
@@ -78,7 +96,7 @@ export const useSiteAgentStore = create<SiteAgentStoreState>()(
     openPanel: () => set({ panelState: 'open' }),
     closePanel: () => set({ panelState: 'closed' }),
 
-    setFloatingPosition: (position) => set({ floatingPosition: position }),
+    setFloatingPosition: (position) => set({ floatingPosition: clampPosition(position) }),
 
     ensureFloatingPosition: (viewport) =>
       set((state) => {
@@ -86,13 +104,25 @@ export const useSiteAgentStore = create<SiteAgentStoreState>()(
           return state
         }
 
-        const width = viewport?.width ?? window.innerWidth
-        const height = viewport?.height ?? window.innerHeight
         return {
-          floatingPosition: {
-            x: Math.max(16, width - 96),
-            y: Math.max(96, height - 96),
-          },
+          floatingPosition: clampPosition(
+            {
+              x: (viewport?.width ?? window.innerWidth) - 96,
+              y: (viewport?.height ?? window.innerHeight) - 96,
+            },
+            viewport,
+          ),
+        }
+      }),
+
+    clampFloatingPosition: (viewport) =>
+      set((state) => {
+        if (!state.floatingPosition) {
+          return state
+        }
+
+        return {
+          floatingPosition: clampPosition(state.floatingPosition, viewport),
         }
       }),
 
@@ -114,9 +144,15 @@ export const useSiteAgentStore = create<SiteAgentStoreState>()(
       })),
 
     finishPendingRequest: () =>
-      set({
-        requestState: 'idle',
-        pendingRequest: null,
+      set((state) => {
+        if (state.requestState !== 'streaming') {
+          return state
+        }
+
+        return {
+          requestState: 'idle',
+          pendingRequest: null,
+        }
       }),
 
     failPendingRequest: (message) =>

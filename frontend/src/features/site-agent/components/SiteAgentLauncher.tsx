@@ -8,6 +8,7 @@ export function SiteAgentLauncher() {
   const openPanel = useSiteAgentStore((state) => state.openPanel)
   const floatingPosition = useSiteAgentStore((state) => state.floatingPosition)
   const ensureFloatingPosition = useSiteAgentStore((state) => state.ensureFloatingPosition)
+  const clampFloatingPosition = useSiteAgentStore((state) => state.clampFloatingPosition)
   const setFloatingPosition = useSiteAgentStore((state) => state.setFloatingPosition)
   const dragStateRef = useRef<{
     pointerId: number
@@ -19,6 +20,17 @@ export function SiteAgentLauncher() {
   useEffect(() => {
     ensureFloatingPosition()
   }, [ensureFloatingPosition])
+
+  useEffect(() => {
+    function handleResize() {
+      clampFloatingPosition()
+    }
+
+    window.addEventListener('resize', handleResize)
+    return () => {
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [clampFloatingPosition])
 
   useEffect(() => {
     if (!floatingPosition) {

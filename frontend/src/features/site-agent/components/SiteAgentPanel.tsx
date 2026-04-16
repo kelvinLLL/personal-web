@@ -22,7 +22,6 @@ export function SiteAgentPanel() {
   const suggestedTransitions = useSiteAgentStore((state) => state.suggestedTransitions)
   const activeRunCards = useSiteAgentStore((state) => state.activeRunCards)
   const startPendingRequest = useSiteAgentStore((state) => state.startPendingRequest)
-  const finishPendingRequest = useSiteAgentStore((state) => state.finishPendingRequest)
   const failPendingRequest = useSiteAgentStore((state) => state.failPendingRequest)
   const applyStreamEvent = useSiteAgentStore((state) => state.applyStreamEvent)
 
@@ -64,7 +63,7 @@ export function SiteAgentPanel() {
       return
     }
 
-    finishPendingRequest()
+    useSiteAgentStore.getState().finishPendingRequest()
   }
 
   return (
