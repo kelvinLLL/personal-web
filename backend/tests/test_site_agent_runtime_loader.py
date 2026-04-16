@@ -3,16 +3,35 @@ from __future__ import annotations
 import importlib
 from pathlib import Path
 from types import SimpleNamespace
+import tomllib
 
 import pytest
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 RUNTIME_MODULE = REPO_ROOT / "apps" / "superhaojun" / "src" / "superhaojun" / "runtime.py"
+BACKEND_PYPROJECT = REPO_ROOT / "backend" / "pyproject.toml"
+BACKEND_LOCK = REPO_ROOT / "backend" / "uv.lock"
+SUPERHAOJUN_PYPROJECT = REPO_ROOT / "apps" / "superhaojun" / "pyproject.toml"
 
 
 def test_superhaojun_runtime_module_is_mounted() -> None:
     assert RUNTIME_MODULE.exists()
+
+
+def test_runtime_boundary_packaging_metadata_stays_in_sync() -> None:
+    backend_project = tomllib.loads(BACKEND_PYPROJECT.read_text(encoding="utf-8"))["project"]
+    mounted_project = tomllib.loads(SUPERHAOJUN_PYPROJECT.read_text(encoding="utf-8"))["project"]
+    lock_header = BACKEND_LOCK.read_text(encoding="utf-8").splitlines()
+
+    backend_python = backend_project["requires-python"]
+    mounted_python = mounted_project["requires-python"]
+    lock_python = next(line for line in lock_header if line.startswith("requires-python = "))
+    expected_lock_python = f'requires-python = "{backend_python}"'
+
+    assert backend_python == ">=3.12"
+    assert backend_python == mounted_python
+    assert lock_python == expected_lock_python
 
 
 def test_runtime_loader_imports_build_runtime() -> None:

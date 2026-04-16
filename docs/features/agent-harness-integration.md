@@ -7,6 +7,7 @@ entrypoints:
   - docs/superpowers/plans/2026-04-16-website-agent-skill-integration.md
   - apps/superhaojun
   - backend/pyproject.toml
+  - backend/uv.lock
   - backend/services/site_agent/runtime_loader.py
   - backend/tests/test_site_agent_runtime_loader.py
   - docs/superpowers/plans/2026-04-14-product-backlog.md
@@ -68,6 +69,8 @@ Out of scope:
   - mounted git submodule for the external runtime so the website can depend on the canonical harness without copying it
 - `backend/pyproject.toml`
   - backend dependency boundary where only the minimum import-time runtime requirements should be added for the mounted harness
+- `backend/uv.lock`
+  - reproducible backend package state for this slice, which must stay in sync with the Python floor and dependency metadata used to import the mounted runtime boundary
 - `backend/services/site_agent/runtime_loader.py`
   - thin loader that resolves the mounted harness path and imports the canonical `build_runtime` entrypoint without re-exporting more runtime internals
 - `backend/tests/test_site_agent_runtime_loader.py`
@@ -106,6 +109,7 @@ Out of scope:
 - the website backend currently needs only `openai` as an additional import-time dependency to load the mounted runtime entrypoint; `rich` and `prompt-toolkit` are present in the harness repo but are not imported by this first loader path
 - the backend package metadata must not advertise a lower Python floor than the mounted runtime boundary; since the mounted `SuperHaojun` package requires Python `>=3.12`, the backend metadata for this integration slice must match that floor
 - the runtime loader should treat the mounted `apps/superhaojun/src` path as an idempotent boundary mount and avoid duplicating it in `sys.path` across repeated calls
+- the backend lockfile must stay synchronized with the Task 1 package metadata so `uv lock --check` remains a valid reproducibility guard after Python-floor or import-time dependency changes
 - the site already exposes several behavior classes that matter for agent integration:
   - public navigation routes in the SPA
   - CRUD-style idea data routes in the backend
@@ -139,3 +143,4 @@ Out of scope:
 - 2026-04-16: Updated the feature doc for Task 1 so the first code slice is explicitly the mounted runtime boundary: submodule mount, minimal backend import-time dependencies, and a loader test that validates the real `SuperHaojun` runtime entrypoint before any adapter logic lands.
 - 2026-04-16: Validated the mounted `SuperHaojun` runtime contract at submodule SHA `79b1c94f5f7f59a678d5478fa23319b2f75382d2`, then shipped the first backend loader plus tests around that exact import surface and the missing-submodule error path.
 - 2026-04-16: Follow-up Task 1 review fixes tightened the backend Python version contract to the mounted runtime floor and expanded the runtime-loader tests to cover idempotent `sys.path` mounting plus clearer transitive dependency import failures.
+- 2026-04-16: Final Task 1 review fixes added the lockfile-sync requirement for this runtime boundary slice, along with a packaging-level regression guard and a regenerated backend `uv.lock`.
