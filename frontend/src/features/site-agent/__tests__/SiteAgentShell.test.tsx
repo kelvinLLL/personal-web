@@ -161,6 +161,163 @@ describe('SiteAgent shell', () => {
     })
   })
 
+  it('renders inline replies with current-page explanation plus read-only idea and content results', async () => {
+    const user = userEvent.setup()
+    streamSiteAgentQueryMock.mockImplementationOnce(
+      async (_payload, options?: { onEvent?: (event: Record<string, unknown>) => void }) => {
+        options?.onEvent?.({
+          type: 'text_delta',
+          text: 'Here is a quick inline summary for this page.',
+        })
+        options?.onEvent?.({
+          type: 'page_explanation',
+          explanation: {
+            route: '/ideas',
+            pageLabel: 'Ideas',
+            summary: 'This page is best for reviewing ideas and deciding whether a larger workflow jump is worth it.',
+            inlineCapabilityGroups: ['using-personal-web', 'ideas-read', 'ideas-workflow'],
+          },
+        })
+        options?.onEvent?.({
+          type: 'inline_result',
+          result: {
+            id: 'ideas.list',
+            kind: 'ideas',
+            title: 'Idea matches',
+            summary: '2 read-only ideas surfaced inline.',
+            items: [
+              {
+                id: 'idea-1',
+                title: 'Signal-first Project Finder',
+                summary: 'Turn interesting signals into concrete build candidates.',
+                metadata: ['pending', 'tool'],
+              },
+              {
+                id: 'idea-2',
+                title: 'Workflow Radar',
+                summary: 'Track workflow runs without leaving the panel.',
+                metadata: ['active', 'research'],
+              },
+            ],
+          },
+        })
+        options?.onEvent?.({
+          type: 'inline_result',
+          result: {
+            id: 'content.skill_marketplace.catalog',
+            kind: 'content',
+            title: 'Marketplace snapshot',
+            summary: 'Featured content stays read-only inside the shell.',
+            snapshotDate: '2026-04-17',
+            items: [
+              {
+                id: 'skill-1',
+                title: 'SDD Feature Development',
+                summary: 'Docs-first workflow guidance.',
+                metadata: ['workflow', 'skill'],
+              },
+            ],
+          },
+        })
+      },
+    )
+
+    renderRoute('/ideas')
+    await user.click(await screen.findByRole('button', { name: 'Open site agent' }))
+    await user.type(screen.getByRole('textbox', { name: 'Ask the site agent' }), 'What can you show inline?')
+    await user.click(screen.getByRole('button', { name: 'Send message' }))
+
+    expect(await screen.findByText('Here is a quick inline summary for this page.')).toBeInTheDocument()
+    expect(screen.getByText('On Ideas')).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        'This page is best for reviewing ideas and deciding whether a larger workflow jump is worth it.',
+      ),
+    ).toBeInTheDocument()
+    expect(screen.getByText('ideas-read')).toBeInTheDocument()
+    expect(screen.getByText('Idea matches')).toBeInTheDocument()
+    expect(screen.getByText('Signal-first Project Finder')).toBeInTheDocument()
+    expect(screen.getByText('Workflow Radar')).toBeInTheDocument()
+    expect(screen.getByText('Marketplace snapshot')).toBeInTheDocument()
+    expect(screen.getByText('SDD Feature Development')).toBeInTheDocument()
+    expect(screen.queryByText('Suggested next pages')).not.toBeInTheDocument()
+  })
+
+  it('keeps transition recommendations visible and navigates with the router when clicked', async () => {
+    const user = userEvent.setup()
+    streamSiteAgentQueryMock.mockImplementationOnce(
+      async (_payload, options?: { onEvent?: (event: Record<string, unknown>) => void }) => {
+        options?.onEvent?.({
+          type: 'text_delta',
+          text: 'This request is better on the Ideas page.',
+        })
+        options?.onEvent?.({
+          type: 'navigation_suggestion',
+          suggestion: {
+            id: 'ideas.workflow.start',
+            route: '/ideas',
+            title: 'Ideas',
+            reason: 'Use the full Ideas surface for workflow entry and review.',
+          },
+        })
+      },
+    )
+
+    renderRoute('/')
+    await user.click(await screen.findByRole('button', { name: 'Open site agent' }))
+    await user.type(screen.getByRole('textbox', { name: 'Ask the site agent' }), 'Start the workflow')
+    await user.click(screen.getByRole('button', { name: 'Send message' }))
+
+    expect(await screen.findByText('Suggested next pages')).toBeInTheDocument()
+    expect(
+      screen.getAllByText('Use the full Ideas surface for workflow entry and review.').length,
+    ).toBeGreaterThan(0)
+
+    await user.click(screen.getByRole('button', { name: 'Open Ideas' }))
+
+    expect(await screen.findByText('Ideas Route')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Agent for Ideas' })).toBeInTheDocument()
+    expect(screen.getAllByText('/ideas').length).toBeGreaterThan(0)
+  })
+
+  it('renders workflow runs as structured cards with visible progress counts', async () => {
+    const user = userEvent.setup()
+    streamSiteAgentQueryMock.mockImplementationOnce(
+      async (_payload, options?: { onEvent?: (event: Record<string, unknown>) => void }) => {
+        options?.onEvent?.({
+          type: 'workflow_run',
+          run: {
+            id: 'run-42',
+            title: 'Ideas workflow run',
+            status: 'completed',
+            summary: 'Completed with persisted ideas and a few failed analyses.',
+            searched: 12,
+            analyzed: 7,
+            persisted: 4,
+            failed: 2,
+          },
+        })
+      },
+    )
+
+    renderRoute('/ideas')
+    await user.click(await screen.findByRole('button', { name: 'Open site agent' }))
+    await user.type(screen.getByRole('textbox', { name: 'Ask the site agent' }), 'Show the workflow run')
+    await user.click(screen.getByRole('button', { name: 'Send message' }))
+
+    expect(await screen.findByText('Workflow runs')).toBeInTheDocument()
+    expect(screen.getAllByText('Ideas workflow run').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('completed').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Searched').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('12').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Analyzed').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('7').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Persisted').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('4').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Failed').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('2').length).toBeGreaterThan(0)
+  })
+
   it('aborts an in-flight request and ignores late events after the panel closes', async () => {
     const pendingStreams: Array<{
       signal?: AbortSignal
@@ -170,7 +327,7 @@ describe('SiteAgent shell', () => {
 
     streamSiteAgentQueryMock.mockImplementation(
       (_payload, options?: { signal?: AbortSignal; onEvent?: (event: { type: string; text?: string }) => void }) =>
-        new Promise<void>((resolve, reject) => {
+        new Promise<void>((_resolve, reject) => {
           pendingStreams.push({
             signal: options?.signal,
             onEvent: options?.onEvent,

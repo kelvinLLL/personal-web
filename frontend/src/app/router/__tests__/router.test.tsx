@@ -54,6 +54,7 @@ describe('app router', () => {
     expect(screen.getByRole('link', { name: 'Daily Nuance' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Skill Marketplace' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Book Reader' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Open site agent' })).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Settings' })).not.toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Reader' })).not.toBeInTheDocument()
   })

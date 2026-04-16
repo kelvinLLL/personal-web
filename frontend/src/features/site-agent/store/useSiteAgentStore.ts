@@ -2,8 +2,11 @@ import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
 import { getSiteAgentPageContext } from '@/features/site-agent/lib/pageContext'
 import type {
+  SiteAgentInlineResult,
   SiteAgentMessage,
+  SiteAgentMessagePart,
   SiteAgentNavigationSuggestion,
+  SiteAgentPageExplanation,
   SiteAgentPageContext,
   SiteAgentPendingRequest,
   SiteAgentPosition,
@@ -34,6 +37,8 @@ interface SiteAgentStoreState {
   finishPendingRequest: () => void
   failPendingRequest: (message: string) => void
   appendAssistantText: (text: string) => void
+  appendPageExplanation: (explanation: SiteAgentPageExplanation) => void
+  appendInlineResult: (result: SiteAgentInlineResult) => void
   recordToolActivity: (activity: SiteAgentToolActivity) => void
   addSuggestion: (suggestion: SiteAgentNavigationSuggestion) => void
   upsertRunCard: (run: SiteAgentWorkflowRunCard) => void
@@ -87,6 +92,34 @@ function buildTextMessage(
     createdAt: Date.now(),
     parts: [{ type: 'text', text }],
   }
+}
+
+function buildAssistantMessage(part: SiteAgentMessagePart): SiteAgentMessage {
+  return {
+    id: nextMessageId('assistant'),
+    role: 'assistant',
+    createdAt: Date.now(),
+    parts: [part],
+  }
+}
+
+function appendAssistantPart(
+  messages: SiteAgentMessage[],
+  part: SiteAgentMessagePart,
+) {
+  const nextMessages = [...messages]
+  const lastMessage = nextMessages.at(-1)
+
+  if (lastMessage?.role === 'assistant') {
+    nextMessages[nextMessages.length - 1] = {
+      ...lastMessage,
+      parts: [...lastMessage.parts, part],
+    }
+    return nextMessages
+  }
+
+  nextMessages.push(buildAssistantMessage(part))
+  return nextMessages
 }
 
 export const useSiteAgentStore = create<SiteAgentStoreState>()(
@@ -201,15 +234,26 @@ export const useSiteAgentStore = create<SiteAgentStoreState>()(
           return { messages }
         }
 
-        messages.push({
-          id: nextMessageId('assistant'),
-          role: 'assistant',
-          createdAt: Date.now(),
-          parts: [{ type: 'text', text }],
-        })
+        messages.push(buildAssistantMessage({ type: 'text', text }))
         return { messages }
       })
     },
+
+    appendPageExplanation: (explanation) =>
+      set((state) => ({
+        messages: appendAssistantPart(state.messages, {
+          type: 'page_explanation',
+          explanation,
+        }),
+      })),
+
+    appendInlineResult: (result) =>
+      set((state) => ({
+        messages: appendAssistantPart(state.messages, {
+          type: 'inline_result',
+          result,
+        }),
+      })),
 
     recordToolActivity: (activity) =>
       set((state) => ({
@@ -232,41 +276,44 @@ export const useSiteAgentStore = create<SiteAgentStoreState>()(
 
         return {
           suggestedTransitions: [...state.suggestedTransitions, suggestion],
-          messages: [
-            ...state.messages,
-            {
-              id: nextMessageId('assistant'),
-              role: 'assistant',
-              createdAt: Date.now(),
-              parts: [{ type: 'navigation_suggestion', suggestion }],
-            },
-          ],
+          messages: appendAssistantPart(state.messages, {
+            type: 'navigation_suggestion',
+            suggestion,
+          }),
         }
       }),
 
     upsertRunCard: (run) =>
       set((state) => {
-        const activeRunCards = state.activeRunCards.some((item) => item.id === run.id)
+        const hadRunCard = state.activeRunCards.some((item) => item.id === run.id)
+        const activeRunCards = hadRunCard
           ? state.activeRunCards.map((item) => (item.id === run.id ? run : item))
           : [...state.activeRunCards, run]
 
         return {
           activeRunCards,
-          messages: [
-            ...state.messages,
-            {
-              id: nextMessageId('assistant'),
-              role: 'assistant',
-              createdAt: Date.now(),
-              parts: [{ type: 'workflow_run', run }],
-            },
-          ],
+          messages: hadRunCard
+            ? state.messages
+            : appendAssistantPart(state.messages, {
+                type: 'workflow_run',
+                run,
+              }),
         }
       }),
 
     applyStreamEvent: (event) => {
       if (event.type === 'text_delta') {
         get().appendAssistantText(event.text)
+        return
+      }
+
+      if (event.type === 'page_explanation') {
+        get().appendPageExplanation(event.explanation)
+        return
+      }
+
+      if (event.type === 'inline_result') {
+        get().appendInlineResult(event.result)
         return
       }
 

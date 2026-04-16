@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { screen, renderWithRouter } from '@/test/utils'
+import { RouterProvider, createMemoryRouter } from 'react-router-dom'
+import { RootLayout } from '@/app/layout/RootLayout'
+import { screen, render } from '@/test/utils'
 import { HomePage } from '@/features/home/page/HomePage'
 
 const fetchIdeas = vi.fn()
@@ -81,20 +83,33 @@ describe('HomePage', () => {
   })
 
   it('shows the unified public-surface entry cards and top idea preview', async () => {
-    renderWithRouter(<HomePage />)
+    const router = createMemoryRouter(
+      [
+        {
+          path: '/',
+          element: <RootLayout />,
+          children: [{ index: true, element: <HomePage /> }],
+        },
+      ],
+      { initialEntries: ['/'] },
+    )
+
+    render(<RouterProvider router={router} />)
+
+    expect(await screen.findByText('Fresh Signal')).toBeInTheDocument()
 
     expect(screen.getByRole('link', { name: 'Explore Ideas' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Check Daily Nuance' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /skill marketplace/i })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /book reader/i })).toBeInTheDocument()
+    expect(screen.getAllByRole('link', { name: /skill marketplace/i }).length).toBeGreaterThan(0)
+    expect(screen.getAllByRole('link', { name: /book reader/i }).length).toBeGreaterThan(0)
+    expect(screen.getByRole('button', { name: 'Open site agent' })).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: /legacy reader/i })).not.toBeInTheDocument()
     expect(screen.getByText('One public front door, four clear surfaces.')).toBeInTheDocument()
     expect(screen.getByText('Start with the surface that matches your intent.')).toBeInTheDocument()
     expect(screen.getByText('Signal-first Project Finder')).toBeInTheDocument()
     expect(screen.getByText('Current Backlog')).toBeInTheDocument()
     expect(screen.getByText('Daily Update Actions')).toBeInTheDocument()
-    expect(screen.getAllByText('Skill Marketplace')).toHaveLength(2)
+    expect(screen.getAllByText('Skill Marketplace').length).toBeGreaterThanOrEqual(2)
     expect(screen.queryByText('Book Reader Rebuild')).not.toBeInTheDocument()
-    expect(await screen.findByText('Fresh Signal')).toBeInTheDocument()
   })
 })

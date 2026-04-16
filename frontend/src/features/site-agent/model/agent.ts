@@ -11,6 +11,7 @@ export interface SiteAgentPageContext {
   route: string
   pageType: SiteAgentPageType
   pageLabel: string
+  pageDescription: string
   panelTitle: string
   inlineCapabilityGroups: string[]
 }
@@ -36,6 +37,10 @@ export interface SiteAgentWorkflowRunCard {
   title: string
   status: string
   summary: string
+  searched?: number
+  analyzed?: number
+  persisted?: number
+  failed?: number
   route?: string
   sourceCapabilityId?: string
 }
@@ -50,6 +55,39 @@ export interface SiteAgentToolActivity {
 export interface SiteAgentTextPart {
   type: 'text'
   text: string
+}
+
+export interface SiteAgentPageExplanation {
+  route: string
+  pageLabel: string
+  summary: string
+  inlineCapabilityGroups: string[]
+}
+
+export interface SiteAgentInlineResultItem {
+  id: string
+  title: string
+  summary?: string
+  metadata?: string[]
+}
+
+export interface SiteAgentInlineResult {
+  id: string
+  kind: 'ideas' | 'content'
+  title: string
+  summary: string
+  snapshotDate?: string
+  items: SiteAgentInlineResultItem[]
+}
+
+export interface SiteAgentPageExplanationPart {
+  type: 'page_explanation'
+  explanation: SiteAgentPageExplanation
+}
+
+export interface SiteAgentInlineResultPart {
+  type: 'inline_result'
+  result: SiteAgentInlineResult
 }
 
 export interface SiteAgentNavigationSuggestionPart {
@@ -69,6 +107,8 @@ export interface SiteAgentToolActivityPart {
 
 export type SiteAgentMessagePart =
   | SiteAgentTextPart
+  | SiteAgentPageExplanationPart
+  | SiteAgentInlineResultPart
   | SiteAgentNavigationSuggestionPart
   | SiteAgentWorkflowRunPart
   | SiteAgentToolActivityPart
@@ -97,6 +137,8 @@ export interface SiteAgentQueryPayload {
 
 export type SiteAgentStreamEvent =
   | { type: 'text_delta'; text: string }
+  | { type: 'page_explanation'; explanation: SiteAgentPageExplanation }
+  | { type: 'inline_result'; result: SiteAgentInlineResult }
   | { type: 'tool_activity'; activity: SiteAgentToolActivity }
   | { type: 'navigation_suggestion'; suggestion: SiteAgentNavigationSuggestion }
   | { type: 'workflow_run'; run: SiteAgentWorkflowRunCard }

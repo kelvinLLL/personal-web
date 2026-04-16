@@ -1,7 +1,9 @@
 import { apiStreamRequest } from '@/lib/apiClient'
 import { getSiteAgentPageContext } from '@/features/site-agent/lib/pageContext'
 import type {
+  SiteAgentInlineResult,
   SiteAgentNavigationSuggestion,
+  SiteAgentPageExplanation,
   SiteAgentQueryPayload,
   SiteAgentStreamEvent,
   SiteAgentWorkflowRunCard,
@@ -179,6 +181,16 @@ function parseCapabilityResult(result: unknown): SiteAgentStreamEvent[] {
     events.push({ type: 'text_delta', text: record.message })
   }
 
+  const explanation = resultToPageExplanation(record)
+  if (explanation) {
+    events.push({ type: 'page_explanation', explanation })
+  }
+
+  const inlineResult = resultToInlineResult(record)
+  if (inlineResult) {
+    events.push({ type: 'inline_result', result: inlineResult })
+  }
+
   const suggestion = resultToSuggestion(record)
   if (suggestion) {
     events.push({ type: 'navigation_suggestion', suggestion })
@@ -190,6 +202,161 @@ function parseCapabilityResult(result: unknown): SiteAgentStreamEvent[] {
   }
 
   return events
+}
+
+function resultToPageExplanation(record: Record<string, unknown>): SiteAgentPageExplanation | null {
+  if (record.capability_id !== 'site.intro') {
+    return null
+  }
+
+  const routeContext = getSiteAgentPageContext(
+    typeof record.route === 'string' ? record.route : '/',
+  )
+
+  return {
+    route: routeContext.route,
+    pageLabel: routeContext.pageLabel,
+    summary: routeContext.pageDescription,
+    inlineCapabilityGroups: Array.isArray(record.inline_capability_groups)
+      ? record.inline_capability_groups.filter((group): group is string => typeof group === 'string')
+      : routeContext.inlineCapabilityGroups,
+  }
+}
+
+function resultToInlineResult(record: Record<string, unknown>): SiteAgentInlineResult | null {
+  const capabilityId =
+    typeof record.capability_id === 'string' ? record.capability_id : undefined
+
+  if (!capabilityId) {
+    return null
+  }
+
+  if (capabilityId === 'ideas.list') {
+    const ideas = Array.isArray(record.ideas) ? record.ideas : []
+    return {
+      id: capabilityId,
+      kind: 'ideas',
+      title: 'Idea matches',
+      summary: `${ideas.length} read-only ideas surfaced inline.`,
+      items: ideas.slice(0, 4).flatMap((idea, index) => {
+        if (!idea || typeof idea !== 'object') {
+          return []
+        }
+
+        const item = idea as Record<string, unknown>
+        const metadata = [
+          typeof item.status === 'string' ? item.status : null,
+          typeof item.category === 'string' ? item.category : null,
+        ].filter((value): value is string => Boolean(value))
+
+        return [
+          {
+            id: typeof item.id === 'string' ? item.id : `idea-${index}`,
+            title: typeof item.title === 'string' ? item.title : 'Idea',
+            summary: typeof item.tagline === 'string' ? item.tagline : undefined,
+            metadata,
+          },
+        ]
+      }),
+    }
+  }
+
+  if (capabilityId === 'ideas.get' && record.idea && typeof record.idea === 'object') {
+    const idea = record.idea as Record<string, unknown>
+    const metadata = [
+      typeof idea.status === 'string' ? idea.status : null,
+      typeof idea.category === 'string' ? idea.category : null,
+    ].filter((value): value is string => Boolean(value))
+
+    return {
+      id: capabilityId,
+      kind: 'ideas',
+      title: 'Idea detail',
+      summary: 'Read-only idea detail surfaced inline.',
+      items: [
+        {
+          id: typeof idea.id === 'string' ? idea.id : capabilityId,
+          title: typeof idea.title === 'string' ? idea.title : 'Idea',
+          summary: typeof idea.tagline === 'string' ? idea.tagline : undefined,
+          metadata,
+        },
+      ],
+    }
+  }
+
+  if (capabilityId === 'content.skill_marketplace.catalog') {
+    const entries = Array.isArray(record.entries) ? record.entries : []
+    return {
+      id: capabilityId,
+      kind: 'content',
+      title: 'Marketplace snapshot',
+      summary:
+        typeof record.count === 'number'
+          ? `${record.count} catalog entries are available in this read-only snapshot.`
+          : 'Catalog entries are available in this read-only snapshot.',
+      snapshotDate:
+        typeof record.snapshot_date === 'string' ? record.snapshot_date : undefined,
+      items: entries.slice(0, 4).flatMap((entry, index) => {
+        if (!entry || typeof entry !== 'object') {
+          return []
+        }
+
+        const item = entry as Record<string, unknown>
+        const metadata = [
+          typeof item.artifact_type === 'string' ? item.artifact_type : null,
+          typeof item.owner_type === 'string' ? item.owner_type : null,
+        ].filter((value): value is string => Boolean(value))
+
+        return [
+          {
+            id: typeof item.id === 'string' ? item.id : `entry-${index}`,
+            title: typeof item.name === 'string' ? item.name : 'Catalog entry',
+            summary: typeof item.summary === 'string' ? item.summary : undefined,
+            metadata,
+          },
+        ]
+      }),
+    }
+  }
+
+  if (capabilityId === 'content.daily_nuance.latest' && record.domains && typeof record.domains === 'object') {
+    const domainEntries = Object.entries(record.domains as Record<string, unknown>)
+    return {
+      id: capabilityId,
+      kind: 'content',
+      title: 'Daily Nuance snapshot',
+      summary:
+        typeof record.snapshot_date === 'string'
+          ? `Snapshot from ${record.snapshot_date} is available inline.`
+          : 'A shipped Daily Nuance snapshot is available inline.',
+      snapshotDate:
+        typeof record.snapshot_date === 'string' ? record.snapshot_date : undefined,
+      items: domainEntries.slice(0, 4).flatMap(([domain, value]) => {
+        if (!value || typeof value !== 'object') {
+          return []
+        }
+
+        const domainRecord = value as Record<string, unknown>
+        const newFancyCount = Array.isArray(domainRecord.new_fancy)
+          ? domainRecord.new_fancy.length
+          : 0
+        const provenRisingCount = Array.isArray(domainRecord.proven_rising)
+          ? domainRecord.proven_rising.length
+          : 0
+
+        return [
+          {
+            id: domain,
+            title: domain,
+            summary: `${newFancyCount} new fancy, ${provenRisingCount} proven rising`,
+            metadata: ['daily-nuance', 'snapshot'],
+          },
+        ]
+      }),
+    }
+  }
+
+  return null
 }
 
 function resultToSuggestion(record: Record<string, unknown>): SiteAgentNavigationSuggestion | null {
@@ -247,6 +414,30 @@ function resultToRunCard(record: Record<string, unknown>): SiteAgentWorkflowRunC
       (typeof run.summary === 'string' && run.summary) ||
       (typeof record.message === 'string' && record.message) ||
       'Workflow status is available.',
+    searched:
+      typeof run.searched === 'number'
+        ? run.searched
+        : typeof record.searched === 'number'
+          ? record.searched
+          : undefined,
+    analyzed:
+      typeof run.analyzed === 'number'
+        ? run.analyzed
+        : typeof record.analyzed === 'number'
+          ? record.analyzed
+          : undefined,
+    persisted:
+      typeof run.persisted === 'number'
+        ? run.persisted
+        : typeof record.persisted === 'number'
+          ? record.persisted
+          : undefined,
+    failed:
+      typeof run.failed === 'number'
+        ? run.failed
+        : typeof record.failed === 'number'
+          ? record.failed
+          : undefined,
     route: typeof record.route === 'string' ? record.route : undefined,
     sourceCapabilityId:
       typeof record.capability_id === 'string' ? record.capability_id : undefined,

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Activity, Sparkles, X } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
@@ -40,6 +41,7 @@ function isAbortError(error: unknown) {
 }
 
 export function SiteAgentPanel() {
+  const navigate = useNavigate()
   const panelState = useSiteAgentStore((state) => state.panelState)
   const closePanel = useSiteAgentStore((state) => state.closePanel)
   const floatingPosition = useSiteAgentStore((state) => state.floatingPosition)
@@ -246,7 +248,12 @@ export function SiteAgentPanel() {
           </div>
         ) : null}
 
-        <SiteAgentSuggestionList suggestions={suggestedTransitions} />
+        <SiteAgentSuggestionList
+          suggestions={suggestedTransitions}
+          onSelectSuggestion={(suggestion) => {
+            navigate(suggestion.route)
+          }}
+        />
 
         {activeRunCards.length > 0 ? (
           <div className="space-y-2">
