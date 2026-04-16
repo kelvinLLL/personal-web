@@ -179,7 +179,7 @@ async def test_content_read_capabilities_have_an_executable_path(
 ) -> None:
     adapter = SiteAgentAdapter(runtime_builder=_build_fake_runtime)
 
-    events = await _collect_events(
+    daily_nuance_events = await _collect_events(
         adapter,
         SiteAgentQuery(
             message=f"tool:{capability_id_to_tool_name('content.daily_nuance.latest')} {{}}",
@@ -188,12 +188,25 @@ async def test_content_read_capabilities_have_an_executable_path(
         ideas_store=ideas_store,
         workflow_runs_store=workflow_runs_store,
     )
+    skill_marketplace_events = await _collect_events(
+        adapter,
+        SiteAgentQuery(
+            message=f"tool:{capability_id_to_tool_name('content.skill_marketplace.catalog')} {{}}",
+            route="/skill-marketplace",
+        ),
+        ideas_store=ideas_store,
+        workflow_runs_store=workflow_runs_store,
+    )
 
-    result = _parse_tool_result(events)
+    daily_nuance_result = _parse_tool_result(daily_nuance_events)
+    skill_marketplace_result = _parse_tool_result(skill_marketplace_events)
 
-    assert result["ok"] is True
-    assert result["capability_id"] == "content.daily_nuance.latest"
-    assert result["snapshot_date"]
+    assert daily_nuance_result["ok"] is True
+    assert daily_nuance_result["capability_id"] == "content.daily_nuance.latest"
+    assert daily_nuance_result["snapshot_date"]
+    assert skill_marketplace_result["ok"] is True
+    assert skill_marketplace_result["capability_id"] == "content.skill_marketplace.catalog"
+    assert skill_marketplace_result["count"] > 0
 
 
 @pytest.mark.asyncio
