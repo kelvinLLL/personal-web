@@ -4,3 +4,7 @@
 [submodule "apps/daily-nuance"]
 	path = apps/daily-nuance
 	url = https://github.com/kelvinLLL/nuance.git
+[submodule "apps/superhaojun"]
+	path = apps/superhaojun
+	url = https://github.com/kelvinLLL/SuperHaojun.git
+	branch = main
