@@ -203,6 +203,18 @@ def test_ideas_route_context_injects_ideas_read() -> None:
     assert "ideas-read" in context.inline_capability_groups
 
 
+def test_superhaojun_route_context_exposes_the_broader_agent_surface() -> None:
+    context = resolve_site_request_context(route="/superhaojun")
+
+    assert context.page_type == "superhaojun"
+    assert set(context.inline_capability_groups) == {
+        "using-personal-web",
+        "ideas-read",
+        "ideas-workflow",
+        "content-read",
+    }
+
+
 @pytest.mark.asyncio
 async def test_content_read_capabilities_have_an_executable_path(
     ideas_store,

@@ -22,6 +22,10 @@ vi.mock('@/pages/BookReader', () => ({
   default: () => <div>Book Reader Route</div>,
 }))
 
+vi.mock('@/pages/SuperHaojun', () => ({
+  default: () => <div>SuperHaojun Route</div>,
+}))
+
 vi.mock('@/pages/SkillMarketplace', () => ({
   default: () => <div>Skill Marketplace Route</div>,
 }))
@@ -54,6 +58,7 @@ describe('app router', () => {
     expect(screen.getByRole('link', { name: 'Daily Nuance' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Skill Marketplace' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Book Reader' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'SuperHaojun' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Open site agent' })).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Settings' })).not.toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Reader' })).not.toBeInTheDocument()
@@ -69,6 +74,12 @@ describe('app router', () => {
     renderRoute('/book-reader')
 
     expect(await screen.findByText('Book Reader Route')).toBeInTheDocument()
+  })
+
+  it('resolves /superhaojun inside the SPA', async () => {
+    renderRoute('/superhaojun')
+
+    expect(await screen.findByText('SuperHaojun Route')).toBeInTheDocument()
   })
 
   it('resolves /skill-marketplace inside the SPA', async () => {

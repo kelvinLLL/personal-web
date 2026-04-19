@@ -29,24 +29,29 @@ export async function prepareDailyNuanceData({
 } = {}) {
   const {sourcePath, targetPath} = resolveDailyNuanceSnapshotPaths(rootDir);
   const hasGeneratedSnapshot = await pathExists(sourcePath);
+  const hasCommittedSnapshot = await pathExists(targetPath);
 
-  if (shouldPrepareDailyNuanceData({hasGeneratedSnapshot, forceRefresh})) {
+  if (forceRefresh || (!hasGeneratedSnapshot && !hasCommittedSnapshot)) {
     console.log('Preparing Daily Nuance snapshot via uv pipeline...');
     run('uv', ['sync', '--python', '3.12'], {cwd: DAILY_NUANCE_DIR});
     run('uv', ['run', 'novel-nuance', '--workspace', '.', '--date', localDateString()], {
       cwd: DAILY_NUANCE_DIR,
     });
+  } else if (!forceRefresh && hasCommittedSnapshot && !hasGeneratedSnapshot) {
+    console.log('Reusing committed Daily Nuance snapshot.');
   } else {
     console.log('Reusing existing Daily Nuance snapshot.');
   }
 
-  if (!(await pathExists(sourcePath))) {
+  if (!(await pathExists(sourcePath)) && !hasCommittedSnapshot) {
     throw new Error(`Daily Nuance snapshot missing after prepare: ${sourcePath}`);
   }
 
   await ensureDir(path.dirname(targetPath));
-  await fs.copyFile(sourcePath, targetPath);
-  console.log(`Daily Nuance snapshot copied to ${path.relative(process.cwd(), targetPath)}`);
+  if (await pathExists(sourcePath)) {
+    await fs.copyFile(sourcePath, targetPath);
+    console.log(`Daily Nuance snapshot copied to ${path.relative(process.cwd(), targetPath)}`);
+  }
 }
 
 async function main() {

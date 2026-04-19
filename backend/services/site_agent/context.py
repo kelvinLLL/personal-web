@@ -64,6 +64,8 @@ def _resolve_page_type(route: str) -> str:
         return "skill-marketplace"
     if route.startswith("/book-reader"):
         return "book-reader"
+    if route.startswith("/superhaojun"):
+        return "superhaojun"
     if route.startswith("/settings"):
         return "settings"
     return "generic"
@@ -75,6 +77,8 @@ def _resolve_inline_groups(page_type: str) -> tuple[str, ...]:
         groups.extend(["ideas-read", "ideas-workflow"])
     elif page_type in {"daily-nuance", "skill-marketplace"}:
         groups.append("content-read")
+    elif page_type == "superhaojun":
+        groups.extend(["ideas-read", "ideas-workflow", "content-read"])
     return tuple(groups)
 
 

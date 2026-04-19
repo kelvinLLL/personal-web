@@ -2,7 +2,7 @@
 
 > 类型：living backlog  
 > 状态：active  
-> 最后更新：2026-04-14
+> 最后更新：2026-04-19
 
 ---
 
@@ -91,25 +91,37 @@
 ### 当前状态
 
 - 假设 `harness` 已有独立实现，但尚未并入当前 repo 的统一前后端边界。
-- 当前主站还没有一个正式的 agent / harness runtime surface。
+- 当前主站已经有第一版 website agent surface：
+  - 浮动 chat 入口
+  - `/api/agent/query` SSE transport
+  - `SuperHaojun` runtime 已通过 `apps/superhaojun` submodule 接入
+  - 当前暴露的是站点能力工具，不是通用文件系统工具
+- 当前网页端 agent 还不能直接作为“服务器 operator agent”去改服务器文件。
 
 ### 主要依赖
 
 - 明确 `harness` 的接入方式：作为独立服务、后端模块，还是被现有后端代理调用。
 - 定义 session / message / tool-call / run-status 的最小数据模型。
 - 明确 chatbot 的权限边界，尤其是 workflow 类操作是否必须 admin-only。
+- 如果要支持服务器文件变更，必须额外定义：
+  - 哪些目录可写
+  - 哪些内置工具允许暴露到网页端
+  - approval UI 与审计记录如何落地
+  - 写入后是否触发构建、刷新或发布
 
 ### 备注
 
 - 这件事天然可以拆成两步。
 - 第一步是 `harness` 接入并跑通一个最小 workflow tool。
 - 第二步是 web chatbot UI，把能力以可视界面暴露出来。
+- 当前已完成的是“网站能力 agent”这一步，不等于“网页端服务器运维 agent”。
+- 既然部署目标已经转向独立 ECS，后续可以考虑一条更强的 operator slice，让 agent 在受控范围内修改服务器上的本地文件。
 - 如果未来 `skill marketplace` 需要展示“可由 harness 调用的 skill/plugin”，这两条线会发生耦合，因此接入边界应尽量清楚。
 
 ### 建议下一步
 
-- 先做一个最小 harness integration slice。
-- 用一个最简单的 chatbot 页面验证消息流、状态流和 tool 调用反馈。
+- 保持当前网站能力 agent 稳定。
+- 单独设计“受控服务器文件变更”这条 operator slice，而不是直接把全部内置 runtime 工具开放到网页端。
 
 ## BL-04 `book-reader` 新版重构
 

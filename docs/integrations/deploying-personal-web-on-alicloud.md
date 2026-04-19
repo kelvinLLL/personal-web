@@ -27,16 +27,65 @@
   - 提供 `ideas / workflow / models / auth / site-agent`
   - 运行时从 `apps/superhaojun` 加载 harness runtime
 
+这里选择 `ECS + nginx`，不是因为 `Vercel` 只能做静态，而是因为你当前正式版本已经不只是纯前端：
+
+- 主站静态资源需要从 `dist/` 提供
+- `backend` 需要长期运行 `FastAPI`
+- `apps/superhaojun` 需要作为 submodule runtime 被后端加载
+- `site-agent`、SSE、模型服务和管理接口都更适合放在一台可控的常驻服务器上
+
 ## 二、服务器建议
 
-建议第一台机器直接选：
+如果你现在是第一次上线，机器不用一步到位拉满。
 
-- 2 vCPU
-- 4 GB 内存
+更实际的建议是：
+
+- `2 vCPU / 2 GB`：可以作为第一台正式机，足够先把站点和 agent 集成跑起来
+- `2 vCPU / 4 GB`：更稳妥，后面跑 workflow、更多 agent 请求时余量更大
 - 40 GB 以上系统盘
 - Ubuntu 24.04
 
-如果后面 `workflow`、agent 使用频率明显上升，再往上加即可。
+如果你预算敏感，先上 `2C2G` 没问题；如果你想少折腾扩容，直接 `2C4G` 更省心。
+
+### 购买页几个常见选项
+
+#### 1. 应用型负载均衡 ALB
+
+单台 ECS 阶段先不要选。
+
+`ALB` 主要用于：
+
+- 多台服务器之间分发流量
+- 健康检查和故障切换
+- 按域名或路径做更复杂的转发
+
+你现在的目标是先把一台机器上的 `nginx + FastAPI + personal-web` 跑通，这个阶段 `ALB` 只会增加复杂度和费用。
+
+#### 2. 专有网络 VPC
+
+默认即可。
+
+可以把 `VPC` 理解成你在云上划出来的一块私有网络空间。对你现在的单机部署来说，不需要自己做复杂网络规划。
+
+#### 3. 虚拟交换机 vSwitch
+
+默认即可。
+
+可以把 `vSwitch` 理解成 `VPC` 里的一个子网。单台 ECS 阶段，跟着默认配置走就够用了。
+
+#### 4. 公网 IP
+
+要开。
+
+你需要让域名解析到这台机器，并让外部用户访问 `80/443`。
+
+#### 5. 安全组
+
+这是比 `VPC / vSwitch` 更值得认真看的选项。入方向建议只放行：
+
+- `22`：SSH
+- `80`：HTTP
+- `443`：HTTPS
 
 ## 三、部署前准备
 
@@ -50,15 +99,10 @@
 至少包括：
 
 - `personal-web/backend/.env`
-- `personal-web/apps/superhaojun/.env`
+
+当前集成模式下，`personal-web/backend/.env` 是必需的；`apps/superhaojun/.env` 只有在你还想单独运行 submodule 自己的 WebUI / TUI / CLI 时才需要。
 
 ## 四、安全组与域名
-
-安全组入方向建议只放行：
-
-- `22`：SSH
-- `80`：HTTP
-- `443`：HTTPS
 
 域名解析加一条 `A` 记录指向 ECS 公网 IP。
 
@@ -132,18 +176,11 @@ TAVILY_API_KEY=你的真实Key
 OPENROUTER_API_KEY=你的真实Key
 ```
 
-### `apps/superhaojun/.env`
-
-至少需要：
-
-```env
-OPENROUTER_API_KEY=你的真实Key
-```
-
 注意：
 
-- 这两个文件都不要提交到 GitHub
-- `personal-web` 部署时，`SuperHaojun` 仍然通过 submodule 内自己的 `.env` 读取模型服务 key
+- `backend/.env` 不要提交到 GitHub
+- 当前 `personal-web` 集成运行 `SuperHaojun` 时，会跟随后端进程工作目录默认读取 `backend/models.yaml` 和 `backend/.env`
+- `apps/superhaojun/.env` 只在你还要单独运行 `uv run superhaojun`、`uv run superhaojun-tui` 或 `uv run superhaojun-web` 时才需要
 
 ## 八、安装依赖
 
@@ -194,6 +231,10 @@ npm run build
 sudo nano /etc/systemd/system/personal-web-backend.service
 ```
 
+填入前先确认你准备让哪个系统用户跑服务。
+
+如果你前面一直用当前 SSH 用户在 `/srv/personal-web` 下安装依赖，那这里最简单的做法就是继续用同一个用户。下面示例里的 `YOUR_USER` 和 `/home/YOUR_USER` 请替换成你的真实用户名和 home 路径；如果你就是用 `root`，那路径应改成 `/root`。
+
 填入：
 
 ```ini
@@ -203,12 +244,12 @@ After=network.target
 
 [Service]
 Type=simple
-User=deploy
-Group=deploy
+User=YOUR_USER
+Group=YOUR_USER
 WorkingDirectory=/srv/personal-web/backend
-Environment=HOME=/home/deploy
-Environment=PATH=/home/deploy/.local/bin:/usr/local/bin:/usr/bin:/bin
-ExecStart=/home/deploy/.local/bin/uv run uvicorn main:app --host 127.0.0.1 --port 8000
+Environment=HOME=/home/YOUR_USER
+Environment=PATH=/home/YOUR_USER/.local/bin:/usr/local/bin:/usr/bin:/bin
+ExecStart=/home/YOUR_USER/.local/bin/uv run uvicorn main:app --host 127.0.0.1 --port 8000
 Restart=always
 RestartSec=5
 
@@ -315,8 +356,8 @@ sudo journalctl -u personal-web-backend -n 100 --no-pager
 重点检查：
 
 - `backend/.env` 是否存在
-- `apps/superhaojun/.env` 是否存在
 - `apps/superhaojun` submodule 是否已初始化
+- 如果你走的是网站集成模式，不要先被 `apps/superhaojun/.env` 缺失误导；它默认不是 `/api/agent/query` 这条链路的主配置源
 
 ### 页面能打开但 API 失败
 

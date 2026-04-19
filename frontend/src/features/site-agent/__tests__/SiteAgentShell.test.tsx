@@ -33,6 +33,10 @@ vi.mock('@/pages/BookReader', () => ({
   default: () => <div>Book Reader Route</div>,
 }))
 
+vi.mock('@/pages/SuperHaojun', () => ({
+  default: () => <div>SuperHaojun Route</div>,
+}))
+
 vi.mock('@/pages/SkillMarketplace', () => ({
   default: () => <div>Skill Marketplace Route</div>,
 }))
@@ -112,6 +116,13 @@ describe('SiteAgent shell', () => {
     renderRoute('/agent')
 
     expect(await screen.findByText('Not Found Route')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Open site agent' })).toBeInTheDocument()
+  })
+
+  it('keeps the floating launcher available on the dedicated SuperHaojun page', async () => {
+    renderRoute('/superhaojun')
+
+    expect(await screen.findByText('SuperHaojun Route')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Open site agent' })).toBeInTheDocument()
   })
 

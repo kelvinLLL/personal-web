@@ -30,17 +30,18 @@ From the current local `SuperHaojun` working repo provided for inspection:
 
 ## Minimum Bootable Secret Set
 
-These are the smallest missing secrets we will need before an end-to-end local integration can realistically boot.
+These are the smallest secrets needed for the current integrated website path to boot.
 
 | File | Repo | Needed now | Required values |
 |---|---|---|---|
 | `backend/.env` | `personal-web` | yes | `ADMIN_PASSWORD`, `JWT_SECRET`, `TAVILY_API_KEY`, `OPENROUTER_API_KEY` |
-| `.env` | `SuperHaojun` submodule root | yes | `OPENROUTER_API_KEY` |
+| `.env` | `SuperHaojun` submodule root | no for integrated website mode | `OPENROUTER_API_KEY` |
 
 Notes:
 
-- Both repos can currently run on `OPENROUTER_API_KEY` alone because their checked-in `models.yaml` files point at OpenRouter by default.
-- The same real key may be reused in both places unless you intentionally want different billing or provider isolation.
+- In integrated website mode, the mounted runtime is built from the backend server process, so it resolves `models.yaml` and `.env` from `personal-web/backend` by default.
+- `apps/superhaojun/.env` only becomes required if you want to run the submodule directly as its own app or CLI outside the website integration path.
+- The same real key may still be reused in both places if you intentionally keep a standalone `SuperHaojun` workflow alongside the website.
 
 ## Missing Local Files
 
@@ -49,7 +50,7 @@ These files are not expected to be committed and should be handed in locally.
 | File | Repo | Status | Purpose | Notes |
 |---|---|---|---|---|
 | `backend/.env` | `personal-web` | gitignored | backend secrets and model-provider credentials | A checked-in example already exists at `backend/.env.example`. |
-| `.env` | `SuperHaojun` | gitignored | model-provider credentials for the harness | A checked-in example already exists at `.env.example`. |
+| `.env` | `SuperHaojun` | gitignored | model-provider credentials for standalone harness execution | Not required for the current website-integrated runtime path. A checked-in example already exists at `.env.example`. |
 | `.haojun/hooks.json` | `SuperHaojun` | local/generated | optional persistent hook rules | Not required for first website integration. |
 | `.haojun/mcp.json` | `SuperHaojun` | local | optional project-level MCP server config | Not required for the current skill-first plan. |
 | `~/.haojun/mcp.json` | user home | local | optional user-level MCP server config | Not required for the current skill-first plan. |
@@ -95,6 +96,11 @@ Fallback-only variables if `models.yaml` is absent:
 | `MODEL_ID` | `gpt-4o` | only used by the single-model fallback path |
 | `MODEL_PROVIDER` | `openai` | only used by the single-model fallback path |
 
+When this file matters:
+
+- required when you run `apps/superhaojun` directly via `uv run superhaojun`, `uv run superhaojun-tui`, or `uv run superhaojun-web`
+- not required for the current `personal-web` integration path, where the mounted runtime is created from the backend server process and therefore resolves `backend/models.yaml` plus `backend/.env`
+
 ### Process Environment Only
 
 These do not need a dedicated `.env` file but may be useful during local development:
@@ -122,10 +128,9 @@ These files are committed, but they still need review during integration because
 
 1. Fill `personal-web/backend/.env` with the website secrets.
 2. Mount `SuperHaojun` into `apps/superhaojun`.
-3. Fill `apps/superhaojun/.env` with the harness secrets from the local source repo.
-4. Verify both checked-in `models.yaml` files still point at the intended provider keys.
-5. Only after that, begin submodule wiring and adapter implementation.
-6. For production, deploy `personal-web` itself and treat `apps/superhaojun` as a submodule dependency instead of deploying the `SuperHaojun` repo separately.
+3. Verify `backend/models.yaml` still points at the intended provider keys for the integrated website runtime.
+4. Only create `apps/superhaojun/.env` if you also plan to run the submodule directly outside the website integration path.
+5. For production, deploy `personal-web` itself and treat `apps/superhaojun` as a submodule dependency instead of deploying the `SuperHaojun` repo separately.
 
 ## Not Required Yet
 

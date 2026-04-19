@@ -1,4 +1,5 @@
 import { siteRoutes } from '@/core/site/routes'
+import { superHaojunRouteMeta } from '@/core/site/superhaojun'
 
 export interface SiteNavigationItem {
   label: string
@@ -33,6 +34,11 @@ export const primaryNavigation: SiteNavigationItem[] = [
     label: 'Book Reader',
     to: siteRoutes.bookReader,
     summary: 'Open the canonical legacy reading experience.',
+  },
+  {
+    label: superHaojunRouteMeta.label,
+    to: superHaojunRouteMeta.route,
+    summary: superHaojunRouteMeta.summary,
   },
 ]
 

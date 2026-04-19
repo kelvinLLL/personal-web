@@ -94,6 +94,18 @@ class SiteAgentAdapter:
                     "ideas.workflow.get_run",
                 ]
             )
+        elif context.page_type == "superhaojun":
+            capability_ids.extend(
+                [
+                    "ideas.list",
+                    "ideas.get",
+                    "ideas.meta",
+                    "ideas.workflow.start",
+                    "ideas.workflow.get_run",
+                    "content.daily_nuance.latest",
+                    "content.skill_marketplace.catalog",
+                ]
+            )
         elif context.page_type == "daily-nuance":
             capability_ids.append("content.daily_nuance.latest")
         elif context.page_type == "skill-marketplace":

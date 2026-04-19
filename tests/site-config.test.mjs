@@ -24,6 +24,7 @@ test('book-reader build env uses the subpath base', () => {
 test('frontend production build env clears local-only backend origins', () => {
   const env = buildFrontendEnv();
   assert.equal(env.VITE_BACKEND_URL, '');
+  assert.equal(env.VITE_SUPERHAOJUN_WEBUI_URL, '');
 });
 
 test('local dev origin uses the unified root port', () => {

@@ -35,6 +35,7 @@ entrypoints:
   - frontend/src/features/site-agent
   - frontend/src/app/router/router.tsx
   - frontend/src/core/site/routes.ts
+  - frontend/src/core/site/superhaojun.ts
 hard_constraints:
   - Treat `SuperHaojun` as an external runtime boundary that will be integrated as a submodule, not copied into the website codebase.
   - Separate human-facing page routes from model-facing action contracts instead of deriving one implicitly from the other.
@@ -46,15 +47,15 @@ design_notes:
   - Current site capabilities already exist across REST routes and workflow streaming; the missing layer is a stable skill-friendly contract and execution policy.
   - Long-running operations should be modeled as runs with progress and terminal states, not as opaque single-response mutations.
   - The feature boundary includes discoverability, schema design, permissions, observability, and non-committed local configuration handoff, not only the harness runtime itself.
-  - The public frontend entry should be a floating chat shell that supports both inline page-local interaction and explicit user-visible page transitions when work needs a larger surface.
-last_updated: 2026-04-17
+  - The public frontend should pair the floating chat shell with a visible larger-surface agent page so users can move between inline help and runtime-oriented inspection intentionally.
+last_updated: 2026-04-19
 ---
 
 # Agent Harness Integration
 
 ## Goal
 
-Integrate `SuperHaojun` into `personal-web` in a way that makes site capabilities safely discoverable and callable by large models through a floating website agent experience.
+Integrate `SuperHaojun` into `personal-web` in a way that makes site capabilities safely discoverable and callable by large models through both a persistent floating agent shell and a visible larger-surface agent page.
 
 Success means the site does not treat agent access as an afterthought. Instead, important operations are exposed through stable, typed, auditable interfaces with clear risk boundaries, while the website itself stays a thin product adapter around the external harness runtime. The user-facing entry should feel like a persistent floating site agent that can either solve work inside the small window or explicitly guide the user into larger page surfaces when needed. The first concrete deliverable is a skill-first contract layer plus clear local configuration handoff, not a runtime rewrite.
 
@@ -133,8 +134,12 @@ Out of scope:
   - persistent public layout boundary where the floating site-agent shell should mount outside page feature slices so it survives route changes
 - `frontend/src/features/site-agent/`
   - frontend-only shell boundary for the floating launcher, compact panel, route context helper, shell state store, typed message parts, and the streaming client for `POST /api/agent/query`
+- `frontend/src/features/site-agent/page/SuperHaojunPage.tsx`
+  - larger-surface public agent page that keeps the website-owned runtime story visible, reuses the integrated conversation boundary, and optionally links out to the standalone harness WebUI
 - `frontend/src/core/site/routes.ts`
   - canonical public route registry for human navigation, useful for separating UI navigation from agent action boundaries
+- `frontend/src/core/site/superhaojun.ts`
+  - centralizes the public agent-lab route metadata plus any optional standalone WebUI URL so the integrated site can expose a larger-surface runtime entry without hardcoded link drift
 - `frontend/src/app/router/router.tsx`
   - current SPA route wiring, relevant because page routes should not be mistaken for the machine-facing interface contract
 
@@ -182,11 +187,18 @@ Out of scope:
   - a floating, draggable chat entry should exist across the site
   - users should be able to complete some help and operation flows entirely inside the floating shell
   - users should also be able to accept explicit page-jump recommendations when a larger product surface is the better fit
+- the public frontend should no longer stop at only the floating shell:
+  - a visible larger-surface agent page should exist in the main site navigation so users can intentionally inspect the integrated runtime boundary
+  - that page can stay website-owned and thinner than the standalone `superhaojun-web` app, but it should clearly explain the current runtime, page context, capability groups, and how to reach the fuller standalone WebUI when available
+- the public-surface follow-up is now implemented:
+  - the floating shell remains the lightweight cross-site entry
+  - `/superhaojun` now exists as a larger public page that reuses the integrated conversation flow and makes the runtime boundary more legible
+  - the standalone `superhaojun-web` app stays optional and can be linked from that page when a separate URL is configured
 - production deployment for the integrated agent slice should target `personal-web`; `apps/superhaojun` is an implementation dependency via submodule, not a separately deployed public product in this setup
 - the shipped Task 4 frontend slice stays intentionally narrow:
   - mount the shell once from `RootLayout`
   - keep the launcher visible across the public SPA routes
-  - derive a compact page label from the current pathname instead of adding a dedicated agent route
+  - derive a compact page label from the current pathname instead of making the floating shell itself depend on a dedicated agent route
   - use a local store for shell state, pending request state, route context, suggestions, and run-card placeholders
   - keep message rendering skeletal but typed so later inline/transition rendering can extend the same boundary
 - the first registry slice should mirror existing real surfaces:
@@ -205,6 +217,14 @@ Out of scope:
   - inject only the relevant website skill text into prompt custom instructions for the current request
   - register only the website tools that match the resolved capability groups for the active page context
   - listen to `MessageBus` events and expose them as structured SSE frames without adding website-only execution shortcuts outside the runtime path
+- the integrated website runtime currently inherits model config from the backend process working directory:
+  - `SiteAgentAdapter` builds the mounted runtime from the backend server process rather than from the submodule as a standalone app
+  - the mounted `SuperHaojun` runtime therefore resolves `models.yaml` and `.env` from `personal-web/backend` by default in integrated website mode
+  - `apps/superhaojun/.env` remains relevant for running the submodule directly as `superhaojun`, `superhaojun-tui`, or `superhaojun-web`, but it is not the primary config source for the website-integrated `/api/agent/query` path
+- the current website-integrated agent is intentionally limited to site-owned capabilities:
+  - it can explain routes, recommend navigation, read ideas, and surface workflow transitions
+  - it does not yet expose general-purpose runtime tools such as `write_file`, `edit_file`, or `bash` through the public website agent surface
+  - a future expansion may expose carefully constrained server-side mutation abilities, but that requires a separate permission, write-scope, and deployment-safety design instead of simply enabling all built-in runtime tools on the public web surface
 - the first backend transport surface for this feature is `POST /api/agent/query`:
   - frontend may send the existing admin bearer token when available
   - backend resolves that token with the same auth helper used by protected routes
@@ -236,3 +256,8 @@ Out of scope:
 - 2026-04-17: Task 4 ships the frontend shell skeleton with a persistent `RootLayout` mount, a local shell store, typed message parts, a thin SSE client, and narrow UI tests that explicitly keep v1 on a floating launcher/panel instead of a dedicated full-page agent route.
 - 2026-04-19: Clarified the deployment boundary: production rollout for the integrated website agent should deploy `personal-web` and update the `apps/superhaojun` submodule, not deploy `SuperHaojun` as a separate public app for this website setup.
 - 2026-04-19: Synced the mounted `apps/superhaojun` submodule to upstream commit `ad9c8b9fa8737276a33ff40fc3f61d5f6c589ebb` before deployment-oriented documentation updates.
+- 2026-04-19: Extended the `personal-web` Aliyun deployment guide with first-server buying guidance for the integrated site: `2C2G` is acceptable for initial rollout, `2C4G` remains the safer headroom choice, single-instance deployment does not need `ALB`, and default `VPC` / `vSwitch` selection is acceptable until the site grows beyond one ECS.
+- 2026-04-19: Corrected the runtime-config boundary after live verification: the website-integrated agent path currently reads `backend/models.yaml` and `backend/.env` by default because the mounted runtime is built from the backend process working directory; `apps/superhaojun/.env` is only required when running the submodule directly outside the website integration path.
+- 2026-04-19: Recorded the next-stage product demand that the website agent may eventually need constrained server-side file mutation abilities when deployed on its own ECS host, but this is not part of the current public capability slice and should stay backlog-tracked until a dedicated operator-safe design is written.
+- 2026-04-19: Started a public-surface follow-up after deployment review showed the floating shell alone under-exposed the richer runtime story; the integrated site now needs a visible larger-surface `SuperHaojun` entry that complements, rather than replaces, the floating shell.
+- 2026-04-19: Completed the public-surface follow-up by adding `/superhaojun` to the SPA, broadening the integrated route context for that page, and making the larger agent surface explicitly complement the existing floating shell instead of hiding behind it.

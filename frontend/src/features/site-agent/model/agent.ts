@@ -4,6 +4,7 @@ export type SiteAgentPageType =
   | 'daily-nuance'
   | 'skill-marketplace'
   | 'book-reader'
+  | 'superhaojun'
   | 'settings'
   | 'generic'
 

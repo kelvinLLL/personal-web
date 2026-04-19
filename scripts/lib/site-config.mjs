@@ -27,6 +27,7 @@ export function buildBookReaderEnv() {
 export function buildFrontendEnv() {
   return {
     VITE_BACKEND_URL: '',
+    VITE_SUPERHAOJUN_WEBUI_URL: '',
   };
 }
 

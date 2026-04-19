@@ -27,6 +27,11 @@ const PAGE_META: Record<SiteAgentPageType, { label: string; description: string 
     description:
       'Use inline mode here for page-aware reading help, but keep longer reading tasks inside the dedicated reader surface.',
   },
+  superhaojun: {
+    label: 'SuperHaojun',
+    description:
+      'Use this larger surface to inspect the integrated runtime story, continue chatting inline, and jump into the fuller standalone WebUI when it is available.',
+  },
   settings: {
     label: 'Settings',
     description: 'Settings stays outside the floating site-agent surface.',
@@ -80,6 +85,9 @@ export function getSiteAgentPageType(route: string): SiteAgentPageType {
   if (route.startsWith(siteRoutes.bookReader) || route.startsWith(siteRoutes.legacyReader.replace(/\/+$/, ''))) {
     return 'book-reader'
   }
+  if (route.startsWith(siteRoutes.superhaojun)) {
+    return 'superhaojun'
+  }
   if (route.startsWith(siteRoutes.settings)) {
     return 'settings'
   }
@@ -92,6 +100,9 @@ export function getInlineCapabilityGroups(pageType: SiteAgentPageType) {
   }
   if (pageType === 'daily-nuance' || pageType === 'skill-marketplace') {
     return ['using-personal-web', 'content-read']
+  }
+  if (pageType === 'superhaojun') {
+    return ['using-personal-web', 'ideas-read', 'ideas-workflow', 'content-read']
   }
   return ['using-personal-web']
 }

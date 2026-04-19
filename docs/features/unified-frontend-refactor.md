@@ -10,9 +10,11 @@ entrypoints:
   - frontend/src/app/router/router.tsx
   - frontend/src/core/site/routes.ts
   - frontend/src/core/site/legacyReader.ts
+  - frontend/src/core/site/superhaojun.ts
   - frontend/src/core/site/navigation.ts
   - frontend/src/lib/apiClient.ts
   - frontend/public/data/ideas/latest.json
+  - frontend/public/data/daily-nuance/latest.json
   - frontend/src/index.css
   - frontend/src/features/home/page/HomePage.tsx
   - frontend/src/features/home/components/FeatureGrid.tsx
@@ -22,8 +24,10 @@ entrypoints:
   - frontend/src/features/daily-nuance/page/DailyNuancePage.tsx
   - frontend/src/features/book-reader/page/BookReaderPage.tsx
   - frontend/src/features/book-reader/components/LegacyReaderTransitionCard.tsx
+  - frontend/src/features/site-agent/page/SuperHaojunPage.tsx
   - frontend/src/core/site/backlog.ts
   - apps/book-reader/src/App.jsx
+  - apps/book-reader/src/components/Toolbar.jsx
 hard_constraints:
   - Follow docs/development-rules.md.
   - Keep every file under 500 lines.
@@ -47,7 +51,10 @@ design_notes:
   - Production builds must not inherit local-only backend origins such as `localhost` just because a dev convenience env file exists on one machine.
   - Public Ideas reads should fall back to a shipped static snapshot when the deployed frontend has no live `/api/ideas` backend behind it.
   - Build-time Ideas snapshot preparation must tolerate deployments where `backend/data/ideas.json` is intentionally absent from version control and should reuse the committed frontend snapshot in that case.
-last_updated: 2026-04-15
+  - Build-time Daily Nuance preparation must also tolerate deployment hosts where the generated submodule snapshot is absent and should reuse the committed frontend snapshot instead of running the live-source pipeline by default.
+  - The public site should expose both a floating agent shell and a visible larger-surface agent entry so users can intentionally move from inline help into a fuller runtime-oriented page.
+  - Legacy sub-apps launched from the SPA must preserve an explicit return path back to the unified site even after the user has crossed the app boundary.
+last_updated: 2026-04-19
 ---
 
 # Unified Frontend Refactor
@@ -89,7 +96,7 @@ Out of scope:
 - `scripts/build-frontend.mjs`
   - empties the deployment output, then builds the frontend with production-safe env overrides instead of inheriting local dev-only backend origins
 - `scripts/prepare-daily-nuance-data.mjs`
-  - prepares or reuses the generated Daily Nuance snapshot and copies it into `frontend/public/data/daily-nuance/latest.json`
+  - refreshes the Daily Nuance snapshot from the submodule pipeline only when explicitly needed, otherwise reusing the committed frontend snapshot so deployment does not stall on live-source generation
 - `scripts/prepare-ideas-data.mjs`
   - refreshes `frontend/public/data/ideas/latest.json` from backend working data when available, but must also reuse the committed snapshot unchanged on deployments where the backend data file is absent
 - `frontend/src/App.tsx`
@@ -102,12 +109,16 @@ Out of scope:
   - canonical route constants for the unified public surface
 - `frontend/src/core/site/legacyReader.ts`
   - centralizes the canonical legacy-reader URL and app-boundary behavior for both dev and deployed environments
+- `frontend/src/core/site/superhaojun.ts`
+  - centralizes the standalone `SuperHaojun` route metadata and optional runtime WebUI URL so the public site can expose a larger agent surface without scattering link logic
 - `frontend/src/core/site/navigation.ts`
-  - shared navigation and homepage-card model for the public surface, including the canonical book-reader entry copy
+  - shared navigation and homepage-card model for the public surface, including the canonical book-reader and `SuperHaojun` entry copy
 - `frontend/src/lib/apiClient.ts`
   - centralizes frontend API base resolution and must stay safe for static production builds
 - `frontend/public/data/ideas/latest.json`
   - build-time mirrored Ideas snapshot used as the public read-only fallback when static deployments have no live Ideas API
+- `frontend/public/data/daily-nuance/latest.json`
+  - committed Daily Nuance snapshot reused on deployment when the generated submodule snapshot is absent
 - `frontend/src/index.css`
   - owns the global typography, smoothing, and page-transition baseline shared by all public routes
 - `frontend/src/core/site/backlog.ts`
@@ -129,7 +140,9 @@ Out of scope:
 - `frontend/src/features/book-reader/page/BookReaderPage.tsx`
   - forwards `/book-reader` into the canonical legacy reader and renders a manual fallback CTA if auto-navigation is blocked
 - `frontend/src/features/book-reader/components/LegacyReaderTransitionCard.tsx`
-  - renders the canonical launch card for the legacy reader and communicates that it is the primary reading surface
+  - renders the canonical launch card for the legacy reader and communicates both the launch boundary and the return path back to the main site
+- `frontend/src/features/site-agent/page/SuperHaojunPage.tsx`
+  - renders a dedicated public page for the integrated agent/runtime surface so users can move from the floating shell into a larger explanatory surface
 - `frontend/src/features/ideas/page/IdeasPage.tsx`
   - owns the public workflow entry actions and decides when discovery UI is visible
 - `frontend/src/components/ideas/WorkflowProgress.tsx`
@@ -142,6 +155,10 @@ Out of scope:
   - thin compatibility shims kept for router-facing imports while feature ownership settles
 - `apps/book-reader/`
   - legacy reader implementation preserved under `/book-reader-legacy/`
+- `apps/book-reader/src/App.jsx`
+  - renders the legacy reader shell and keeps top-level site navigation visible whenever the reader is not in focused reading mode
+- `apps/book-reader/src/components/Toolbar.jsx`
+  - renders focused reader controls and must preserve a visible route back to the unified site even while reading
 - `apps/daily-nuance/`
   - nuance-generation workspace retained as a data source, not as a public route
 
@@ -153,10 +170,11 @@ Phase 1 now serves one public SPA surface from `frontend`:
 - `/ideas`
 - `/daily-nuance`
 - `/book-reader`
+- `/superhaojun`
 
 The existing reader remains available under `/book-reader-legacy/` and is still built and proxied as a separate app during the transition.
 
-Daily Nuance no longer depends on the old public Docusaurus site. Instead, the root toolchain prepares a generated snapshot and copies it into the frontend's static asset space, and the unified frontend reads that snapshot directly.
+Daily Nuance no longer depends on the old public Docusaurus site. Instead, the root toolchain prepares a generated snapshot and copies it into the frontend's static asset space, and the unified frontend reads that snapshot directly. The deployment-safe version of this flow must now match the Ideas snapshot behavior: when the generated submodule snapshot is absent on a build host, the committed frontend snapshot should be reused instead of silently triggering the live-source pipeline.
 
 The root dev flow now exposes one root URL on port `3000` and internally proxies:
 
@@ -189,10 +207,12 @@ That refinement is now implemented in the current frontend:
 - the homepage entrypoint block is faster to scan and uses simpler directory-style entries
 - the homepage now includes a compact roadmap section backed by a typed backlog mirror instead of markdown parsing at runtime
 - homepage previews are framed as evidence of live content rather than primary navigation
+- the unified frontend must now acknowledge `SuperHaojun` as a first-class destination instead of leaving the richer runtime-oriented surface hidden behind the floating shell
 - the ideas page now opens as a curated collection with a secondary control band
 - idea cards emphasize why an idea matters before exposing workflow actions
 - `/book-reader` now acts as a thin launch boundary into the legacy reader, which is again the canonical public reading experience
 - the homepage no longer exposes a duplicate Legacy Reader card because Book Reader itself already resolves to the canonical legacy surface
+- the canonical Book Reader flow must stay bidirectional, so the legacy reader itself needs a visible route back to the unified site after the user crosses the app boundary
 - the reader backlog mirror no longer advertises a rebuild that is no longer on the active delivery path
 - the stabilization follow-up is now implemented:
   - legacy-reader links are rendered as external app boundaries instead of SPA-internal routes
@@ -207,6 +227,7 @@ Residual risk remains intentionally limited to:
 - local dev legacy-reader access still depending on correct app-boundary handling between the SPA and the separate legacy app
 - production behavior of backend-driven ideas surfaces still depending on whether a real `/api/*` backend is deployed behind the static frontend
 - public Ideas reads now expected to degrade to a mirrored static snapshot on pure static deployments, while write and workflow operations still require a live backend
+- the optional standalone `SuperHaojun` WebUI still depending on separate runtime configuration when you want more than the integrated public page and floating shell
 
 ## Change Notes
 
@@ -234,3 +255,5 @@ Residual risk remains intentionally limited to:
 - 2026-04-15: Completed the deployment-hardening follow-up by unifying site typography around the loaded Geist family, removing the page-enter text shift, adding a build-time Ideas snapshot mirror plus frontend read fallback for pure static hosting, and keeping the legacy reader route safe behind the Vercel passthrough rewrite.
 - 2026-04-15: Started a Vercel build-failure follow-up after production logs showed `prepare-ideas-data.mjs` still hard-required the gitignored backend seed file instead of reusing the committed frontend Ideas snapshot.
 - 2026-04-15: Completed the Vercel build-failure follow-up by teaching `prepare-ideas-data.mjs` to refresh from backend working data when present but reuse the committed frontend Ideas snapshot when the gitignored source file is absent on deployment.
+- 2026-04-19: Started a deployment and navigation hardening follow-up after ECS rollout exposed three concrete gaps: Daily Nuance prepare still falls back to a live pipeline when the generated submodule snapshot is absent, the unified frontend hides the richer `SuperHaojun` surface behind the floating shell, and the legacy reader lacks an explicit return path back to the main site.
+- 2026-04-19: Completed the deployment and navigation hardening follow-up by teaching Daily Nuance prepare to reuse the committed frontend snapshot on deployment, adding `/superhaojun` as a visible larger-surface agent route, and restoring an explicit return-to-site control inside the legacy reader toolbar.

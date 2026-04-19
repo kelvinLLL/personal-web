@@ -16,6 +16,7 @@ const DailyNuance = lazy(() => import('@/pages/DailyNuance'))
 const SkillMarketplace = lazy(() => import('@/pages/SkillMarketplace'))
 const SkillMarketplaceDetail = lazy(() => import('@/pages/SkillMarketplaceDetail'))
 const BookReader = lazy(() => import('@/pages/BookReader'))
+const SuperHaojun = lazy(() => import('@/pages/SuperHaojun'))
 const Settings = lazy(() => import('@/pages/Settings'))
 const NotFound = lazy(() => import('@/pages/NotFound'))
 
@@ -48,6 +49,7 @@ export const appRoutes: RouteObject[] = [
         element: withSuspense(<SkillMarketplaceDetail />),
       },
       { path: toChildPath(siteRoutes.bookReader), element: withSuspense(<BookReader />) },
+      { path: toChildPath(siteRoutes.superhaojun), element: withSuspense(<SuperHaojun />) },
       { path: 'reader', element: <Navigate replace to={siteRoutes.bookReader} /> },
       { path: toChildPath(siteRoutes.settings), element: withSuspense(<Settings />) },
       { path: '*', element: withSuspense(<NotFound />) },
