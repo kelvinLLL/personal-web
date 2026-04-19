@@ -1,5 +1,5 @@
 ---
-status: designing
+status: in_progress
 entrypoints:
   - docs/features/agent-harness-integration.md
   - docs/integrations/superhaojun-env-handoff.md
@@ -182,6 +182,7 @@ Out of scope:
   - a floating, draggable chat entry should exist across the site
   - users should be able to complete some help and operation flows entirely inside the floating shell
   - users should also be able to accept explicit page-jump recommendations when a larger product surface is the better fit
+- production deployment for the integrated agent slice should target `personal-web`; `apps/superhaojun` is an implementation dependency via submodule, not a separately deployed public product in this setup
 - the shipped Task 4 frontend slice stays intentionally narrow:
   - mount the shell once from `RootLayout`
   - keep the launcher visible across the public SPA routes
@@ -233,3 +234,5 @@ Out of scope:
 - 2026-04-17: Task 3 expands the website-owned boundary with route-aware context resolution, pure capability handlers, a thin tool bridge and adapter, and the first `POST /api/agent/query` SSE transport.
 - 2026-04-17: The first `ideas.workflow.start` implementation stays conservative by returning an auth-gated transition result instead of launching a background workflow run from the agent transport.
 - 2026-04-17: Task 4 ships the frontend shell skeleton with a persistent `RootLayout` mount, a local shell store, typed message parts, a thin SSE client, and narrow UI tests that explicitly keep v1 on a floating launcher/panel instead of a dedicated full-page agent route.
+- 2026-04-19: Clarified the deployment boundary: production rollout for the integrated website agent should deploy `personal-web` and update the `apps/superhaojun` submodule, not deploy `SuperHaojun` as a separate public app for this website setup.
+- 2026-04-19: Synced the mounted `apps/superhaojun` submodule to upstream commit `ad9c8b9fa8737276a33ff40fc3f61d5f6c589ebb` before deployment-oriented documentation updates.

@@ -7,6 +7,7 @@ Unified production entrypoint for `kelvin11888.blog`.
 - `portal/`: Astro homepage and future personal-site shell
 - `apps/book-reader`: git submodule pointing to `kelvinLLL/Hello-`
 - `apps/daily-nuance`: git submodule pointing to `kelvinLLL/nuance`
+- `apps/superhaojun`: git submodule pointing to `kelvinLLL/SuperHaojun`
 - `dist/`: final deployable output for Vercel
 
 ## First-time setup
@@ -88,3 +89,8 @@ Connect this repo to Vercel and set:
 Bind the custom domain:
 
 - `kelvin11888.blog`
+
+If you want to deploy the unified website on your own server instead of Vercel:
+
+- follow [阿里云部署指南](docs/integrations/deploying-personal-web-on-alicloud.md)
+- deploy `personal-web`, not `apps/superhaojun` separately
