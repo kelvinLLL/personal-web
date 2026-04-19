@@ -92,7 +92,7 @@
 你需要准备：
 
 1. 阿里云 ECS 一台
-2. 域名或子域名
+2. 域名或子域名（可选，首轮也可以先只用公网 IP）
 3. SSH 密钥
 4. 生产环境配置文件
 
@@ -102,9 +102,33 @@
 
 当前集成模式下，`personal-web/backend/.env` 是必需的；`apps/superhaojun/.env` 只有在你还想单独运行 submodule 自己的 WebUI / TUI / CLI 时才需要。
 
-## 四、安全组与域名
+## 四、安全组、IP 与域名
 
-域名解析加一条 `A` 记录指向 ECS 公网 IP。
+你现在可以按两种阶段理解：
+
+- `阶段一：先用公网 IP 跑通`
+  - 可行
+  - 适合你现在这种“先把服务部署起来并验证功能”的阶段
+  - 这时可以先不配置域名解析，也先不做 HTTPS
+- `阶段二：备案后再切域名`
+  - 如果你的网站部署在中国内地并准备正式对外提供网站服务，后续还是建议完成备案后再绑定域名
+  - 备案完成后，再把域名解析到 ECS 公网 IP，并补 HTTPS
+
+如果你当前先不用域名：
+
+- 安全组继续放行 `80`
+- 如果暂时不做 HTTPS，可以先不依赖 `443`
+- 浏览器访问时先用：
+
+```text
+http://你的公网IP
+```
+
+如果你后面切到域名：
+
+- 在域名 DNS 里加 `A` 记录指向 ECS 公网 IP
+- 再把下面 Nginx 里的 `server_name` 改成你的真实域名
+- 最后再申请 HTTPS 证书
 
 ## 五、登录服务器并安装基础环境
 
@@ -235,6 +259,16 @@ sudo nano /etc/systemd/system/personal-web-backend.service
 
 如果你前面一直用当前 SSH 用户在 `/srv/personal-web` 下安装依赖，那这里最简单的做法就是继续用同一个用户。下面示例里的 `YOUR_USER` 和 `/home/YOUR_USER` 请替换成你的真实用户名和 home 路径；如果你就是用 `root`，那路径应改成 `/root`。
 
+注意：
+
+- 阿里云网页终端或 Cloud Assistant 里常见的 `ecs-assist-user` 不是适合作为长期 `systemd` 服务用户的目标值
+- 如果你把 `User=` 配成一个不存在或不可用的用户，`systemd` 会报：
+  - `status=217/USER`
+  - `Failed to determine user credentials`
+- 对个人站最省事的做法通常是：
+  - 要么用你真实创建的 Linux 用户
+  - 要么直接用 `root`
+
 填入：
 
 ```ini
@@ -268,6 +302,10 @@ sudo systemctl status personal-web-backend
 
 ## 十一、配置 Nginx
 
+### 方案 A：先只用公网 IP
+
+如果你当前还没有备案完成，或者只是想先跑通网站，推荐先用这个版本。
+
 新建站点配置：
 
 ```bash
@@ -279,7 +317,7 @@ sudo nano /etc/nginx/sites-available/personal-web
 ```nginx
 server {
     listen 80;
-    server_name yourdomain.com www.yourdomain.com;
+    server_name _;
 
     root /srv/personal-web/dist;
     index index.html;
@@ -299,6 +337,8 @@ server {
 }
 ```
 
+这里的 `server_name _;` 表示先接这台机器上的默认 HTTP 请求，不要求你已经有域名。
+
 启用配置：
 
 ```bash
@@ -307,7 +347,28 @@ sudo nginx -t
 sudo systemctl reload nginx
 ```
 
+然后先直接访问：
+
+```text
+http://你的公网IP
+```
+
+### 方案 B：备案后切换域名
+
+如果你已经完成备案并准备正式使用域名，把上面的 `server_name _;` 改成：
+
+```nginx
+server_name yourdomain.com www.yourdomain.com;
+```
+
+同时在 DNS 中添加：
+
+- `A @ -> 你的 ECS 公网 IP`
+- `A www -> 你的 ECS 公网 IP`
+
 ## 十二、配置 HTTPS
+
+这一步只在你已经准备好域名时再做。
 
 安装 Certbot：
 
@@ -320,6 +381,12 @@ sudo apt install -y certbot python3-certbot-nginx
 ```bash
 sudo certbot --nginx -d yourdomain.com -d www.yourdomain.com
 ```
+
+如果你当前还只是用公网 IP：
+
+- 先跳过这一步
+- 先用 `HTTP + 公网 IP` 验证站点和 API 都正常
+- 等备案和域名都准备好后，再回来补 HTTPS
 
 ## 十三、更新发布流程
 
@@ -358,6 +425,44 @@ sudo journalctl -u personal-web-backend -n 100 --no-pager
 - `backend/.env` 是否存在
 - `apps/superhaojun` submodule 是否已初始化
 - 如果你走的是网站集成模式，不要先被 `apps/superhaojun/.env` 缺失误导；它默认不是 `/api/agent/query` 这条链路的主配置源
+- 如果日志里出现 `status=217/USER`
+  - 先检查 `/etc/systemd/system/personal-web-backend.service` 里的 `User=` 和 `Group=`
+  - 不要把它写成 `ecs-assist-user`
+  - 改成真实存在的 Linux 用户或直接用 `root`
+
+修改后执行：
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl restart personal-web-backend
+sudo systemctl status personal-web-backend --no-pager
+```
+
+### 想单独运行 `SuperHaojun` 原生 WebUI
+
+如果你除了网站集成模式，还想在服务器上单独跑 `SuperHaojun` 自己的 WebUI，最省事的方式就是让它复用主站后端的密钥文件。
+
+例如：
+
+```bash
+cd /srv/personal-web/apps/superhaojun
+ln -sfn /srv/personal-web/backend/.env .env
+```
+
+这样：
+
+- `personal-web/backend` 继续使用自己的 `.env`
+- `apps/superhaojun` 也能复用同一份密钥
+- 后面如果你想拆成独立配置，再把这个软链接换成独立文件即可
+
+如果你还想让 standalone `SuperHaojun` 复用同一套模型配置，也可以额外考虑：
+
+```bash
+cd /srv/personal-web/apps/superhaojun
+ln -sfn /srv/personal-web/backend/models.yaml models.yaml
+```
+
+但这个不是必须；最小可运行通常先共享 `.env` 就够了。
 
 ### 页面能打开但 API 失败
 
@@ -367,7 +472,13 @@ sudo journalctl -u personal-web-backend -n 100 --no-pager
 curl http://127.0.0.1:8000/api/health
 ```
 
-再确认 nginx 代理：
+如果你当前走公网 IP：
+
+```bash
+curl http://你的公网IP/api/health
+```
+
+如果你已经切到域名：
 
 ```bash
 curl https://yourdomain.com/api/health

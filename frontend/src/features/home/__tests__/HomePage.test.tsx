@@ -104,7 +104,7 @@ describe('HomePage', () => {
     expect(screen.getAllByRole('link', { name: /book reader/i }).length).toBeGreaterThan(0)
     expect(screen.getByRole('button', { name: 'Open site agent' })).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: /legacy reader/i })).not.toBeInTheDocument()
-    expect(screen.getByText('One public front door, four clear surfaces.')).toBeInTheDocument()
+    expect(screen.getByText('One public front door, five clear surfaces.')).toBeInTheDocument()
     expect(screen.getByText('Start with the surface that matches your intent.')).toBeInTheDocument()
     expect(screen.getByText('Signal-first Project Finder')).toBeInTheDocument()
     expect(screen.getByText('Current Backlog')).toBeInTheDocument()

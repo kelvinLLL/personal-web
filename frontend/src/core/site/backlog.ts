@@ -15,15 +15,15 @@ export const homepageBacklogItems: HomepageBacklogItem[] = [
     status: 'pending',
   },
   {
-    id: 'BL-02',
-    title: 'Skill Marketplace',
-    summary: 'Create a market-style browsing surface for personal skills and high-quality community tools.',
+    id: 'BL-03',
+    title: 'Harness Operator Slice',
+    summary: 'Keep the site agent stable, then expand approvals and controlled operator actions beyond the current read-focused web surface.',
     status: 'in_progress',
   },
   {
-    id: 'BL-03',
-    title: 'Harness + Web Chatbot',
-    summary: 'Integrate the harness workflow surface and expose it through a web-native chat entry.',
-    status: 'pending',
+    id: 'BL-04',
+    title: 'Book Reader Deep Migration',
+    summary: 'Decide which deeper reader capabilities should move from the legacy app into the unified site next.',
+    status: 'in_progress',
   },
 ]

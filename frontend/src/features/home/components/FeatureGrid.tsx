@@ -9,7 +9,7 @@ export function FeatureGrid() {
           Tool Entrypoints
         </p>
         <h2 className="text-2xl font-semibold tracking-tight text-stone-900">
-          One public front door, four clear surfaces.
+          One public front door, five clear surfaces.
         </h2>
         <p className="text-sm leading-7 text-stone-600 sm:text-base">
           Start with the surface that matches your intent.

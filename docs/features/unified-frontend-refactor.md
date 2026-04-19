@@ -52,7 +52,7 @@ design_notes:
   - Public Ideas reads should fall back to a shipped static snapshot when the deployed frontend has no live `/api/ideas` backend behind it.
   - Build-time Ideas snapshot preparation must tolerate deployments where `backend/data/ideas.json` is intentionally absent from version control and should reuse the committed frontend snapshot in that case.
   - Build-time Daily Nuance preparation must also tolerate deployment hosts where the generated submodule snapshot is absent and should reuse the committed frontend snapshot instead of running the live-source pipeline by default.
-  - The public site should expose both a floating agent shell and a visible larger-surface agent entry so users can intentionally move from inline help into a fuller runtime-oriented page.
+  - The public site should expose both a floating agent shell and a visible `SuperHaojun` launch boundary so users can intentionally move from inline help into the richer standalone WebUI without maintaining a weaker duplicate page in the SPA.
   - Legacy sub-apps launched from the SPA must preserve an explicit return path back to the unified site even after the user has crossed the app boundary.
 last_updated: 2026-04-19
 ---
@@ -110,7 +110,7 @@ Out of scope:
 - `frontend/src/core/site/legacyReader.ts`
   - centralizes the canonical legacy-reader URL and app-boundary behavior for both dev and deployed environments
 - `frontend/src/core/site/superhaojun.ts`
-  - centralizes the standalone `SuperHaojun` route metadata and optional runtime WebUI URL so the public site can expose a larger agent surface without scattering link logic
+  - centralizes the standalone `SuperHaojun` route metadata, runtime WebUI URL, and launch-boundary redirect helper so the public site can hand users into the canonical external runtime surface without scattering link logic
 - `frontend/src/core/site/navigation.ts`
   - shared navigation and homepage-card model for the public surface, including the canonical book-reader and `SuperHaojun` entry copy
 - `frontend/src/lib/apiClient.ts`
@@ -142,7 +142,7 @@ Out of scope:
 - `frontend/src/features/book-reader/components/LegacyReaderTransitionCard.tsx`
   - renders the canonical launch card for the legacy reader and communicates both the launch boundary and the return path back to the main site
 - `frontend/src/features/site-agent/page/SuperHaojunPage.tsx`
-  - renders a dedicated public page for the integrated agent/runtime surface so users can move from the floating shell into a larger explanatory surface
+  - forwards `/superhaojun` into the canonical standalone WebUI and keeps a manual fallback CTA visible when automatic navigation is blocked or the runtime URL is not configured
 - `frontend/src/features/ideas/page/IdeasPage.tsx`
   - owns the public workflow entry actions and decides when discovery UI is visible
 - `frontend/src/components/ideas/WorkflowProgress.tsx`
@@ -208,6 +208,7 @@ That refinement is now implemented in the current frontend:
 - the homepage now includes a compact roadmap section backed by a typed backlog mirror instead of markdown parsing at runtime
 - homepage previews are framed as evidence of live content rather than primary navigation
 - the unified frontend must now acknowledge `SuperHaojun` as a first-class destination instead of leaving the richer runtime-oriented surface hidden behind the floating shell
+- `/superhaojun` should behave like `/book-reader`: a thin launch boundary into the higher-quality standalone surface rather than a second explanatory app inside the SPA
 - the ideas page now opens as a curated collection with a secondary control band
 - idea cards emphasize why an idea matters before exposing workflow actions
 - `/book-reader` now acts as a thin launch boundary into the legacy reader, which is again the canonical public reading experience
@@ -227,7 +228,7 @@ Residual risk remains intentionally limited to:
 - local dev legacy-reader access still depending on correct app-boundary handling between the SPA and the separate legacy app
 - production behavior of backend-driven ideas surfaces still depending on whether a real `/api/*` backend is deployed behind the static frontend
 - public Ideas reads now expected to degrade to a mirrored static snapshot on pure static deployments, while write and workflow operations still require a live backend
-- the optional standalone `SuperHaojun` WebUI still depending on separate runtime configuration when you want more than the integrated public page and floating shell
+- the standalone `SuperHaojun` WebUI still depending on separate runtime configuration and hosting even though the unified site now treats it as the canonical public runtime surface
 
 ## Change Notes
 
@@ -257,3 +258,4 @@ Residual risk remains intentionally limited to:
 - 2026-04-15: Completed the Vercel build-failure follow-up by teaching `prepare-ideas-data.mjs` to refresh from backend working data when present but reuse the committed frontend Ideas snapshot when the gitignored source file is absent on deployment.
 - 2026-04-19: Started a deployment and navigation hardening follow-up after ECS rollout exposed three concrete gaps: Daily Nuance prepare still falls back to a live pipeline when the generated submodule snapshot is absent, the unified frontend hides the richer `SuperHaojun` surface behind the floating shell, and the legacy reader lacks an explicit return path back to the main site.
 - 2026-04-19: Completed the deployment and navigation hardening follow-up by teaching Daily Nuance prepare to reuse the committed frontend snapshot on deployment, adding `/superhaojun` as a visible larger-surface agent route, and restoring an explicit return-to-site control inside the legacy reader toolbar.
+- 2026-04-19: Re-scoped `/superhaojun` into a thin launch boundary that jumps from the Vercel-served public site into the polished standalone WebUI running on the runtime host, replacing the weaker in-site explanatory page.

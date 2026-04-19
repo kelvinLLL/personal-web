@@ -17,8 +17,7 @@
 | ID | 事项 | 状态 | 建议优先级 |
 |---|---|---|---|
 | BL-01 | `ideas` / `daily-nuance` 每日更新入口 | pending | high |
-| BL-02 | `skill marketplace` | pending | medium |
-| BL-03 | `harness` 集成与 web chatbot | pending | high |
+| BL-03 | `harness` 集成与 operator slice | in_progress | high |
 | BL-04 | `book-reader` 新版重构 | in_progress | medium |
 
 ## BL-01 `ideas` / `daily-nuance` 每日更新入口
@@ -53,54 +52,26 @@
 - 先做 `ideas` admin-only 的“今日更新”按钮。
 - 再为 `daily-nuance` 设计服务端刷新与状态反馈边界。
 
-## BL-02 `skill marketplace`
-
-### 目标
-
-- 建一个市场页，集中展示你自己实现的 skills，以及社区公认高质量的 skills / plugins。
-- 让这个页面既能承担浏览发现，也能承担后续的精选与沉淀。
-
-### 当前状态
-
-- 仓库已经有 skills / plugins / 文档体系，但没有统一的 marketplace surface。
-- 前端已经有统一主站与 UI 组件基础，可承接新的产品页面。
-
-### 主要依赖
-
-- 定义 market item schema：最少要包含名称、类型、来源、自研/社区、摘要、适用场景、质量信号、链接或安装方式。
-- 明确“展示 catalog”与“真正安装/启用”是否拆期。
-- 明确精选规则，避免市场页沦为简单堆链接。
-
-### 备注
-
-- 前端信息架构可以借鉴成熟市场类产品，但应保持当前主站的视觉语法与组件体系。
-- 推荐先做 read-only curated catalog，再决定是否加入安装、同步、评分等重交互能力。
-
-### 建议下一步
-
-- 先设计 item schema 和 source-of-truth。
-- 再做 marketplace 的最小目录页与详情卡片体系。
-
-## BL-03 `harness` 集成与 web chatbot
+## BL-03 `harness` 集成与 operator slice
 
 ### 目标
 
 - 将你自研的 `harness` 集成进主站。
 - 让它既能完成 workflow 类操作，也能在 web 页面提供类似 chatbot 的交互入口。
+- 在保持当前站点能力 agent 稳定的基础上，逐步打开更强的 operator 能力。
 
 ### 当前状态
 
-- 假设 `harness` 已有独立实现，但尚未并入当前 repo 的统一前后端边界。
 - 当前主站已经有第一版 website agent surface：
   - 浮动 chat 入口
   - `/api/agent/query` SSE transport
   - `SuperHaojun` runtime 已通过 `apps/superhaojun` submodule 接入
+  - `/superhaojun` 已经退回到一个公开 launch boundary，并把用户交给独立 `SuperHaojun` WebUI
   - 当前暴露的是站点能力工具，不是通用文件系统工具
 - 当前网页端 agent 还不能直接作为“服务器 operator agent”去改服务器文件。
 
 ### 主要依赖
 
-- 明确 `harness` 的接入方式：作为独立服务、后端模块，还是被现有后端代理调用。
 - 定义 session / message / tool-call / run-status 的最小数据模型。
 - 明确 chatbot 的权限边界，尤其是 workflow 类操作是否必须 admin-only。
 - 如果要支持服务器文件变更，必须额外定义：
@@ -111,17 +82,15 @@
 
 ### 备注
 
-- 这件事天然可以拆成两步。
-- 第一步是 `harness` 接入并跑通一个最小 workflow tool。
-- 第二步是 web chatbot UI，把能力以可视界面暴露出来。
 - 当前已完成的是“网站能力 agent”这一步，不等于“网页端服务器运维 agent”。
 - 既然部署目标已经转向独立 ECS，后续可以考虑一条更强的 operator slice，让 agent 在受控范围内修改服务器上的本地文件。
-- 如果未来 `skill marketplace` 需要展示“可由 harness 调用的 skill/plugin”，这两条线会发生耦合，因此接入边界应尽量清楚。
+- 现在真正待补的是更深的 approval、operator 工具暴露、以及是否要把 standalone WebUI 做成同域接入。
 
 ### 建议下一步
 
 - 保持当前网站能力 agent 稳定。
 - 单独设计“受控服务器文件变更”这条 operator slice，而不是直接把全部内置 runtime 工具开放到网页端。
+- 视部署稳定性再决定是否需要“同域代理 SuperHaojun WebUI”这条更重的集成线。
 
 ## BL-04 `book-reader` 新版重构
 
@@ -159,9 +128,8 @@
 1. `BL-01` 先落地 `ideas` 的 admin-only 今日更新入口。
 2. `BL-01` 再补 `daily-nuance` 的服务端刷新边界。
 3. `BL-04` 为新版 `book-reader` 定义最小可替代切片。
-4. `BL-03` 做 `harness` 的最小接入切片。
-5. `BL-03` 在此基础上做 web chatbot。
-6. `BL-02` 等 skill / plugin 的 schema 与 harness 关系更清楚后，再做 marketplace。
+4. `BL-03` 在现有 website agent 基础上做更强的 operator slice。
+5. `BL-04` 根据阅读优先级决定是否继续迁移更深能力。
 
 ## 进入 spec 的触发条件
 
