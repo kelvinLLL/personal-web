@@ -49,3 +49,19 @@ async def test_switch_model_invalid_key(client, auth_headers):
         headers=auth_headers,
     )
     assert r.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_reload_models_requires_auth(client):
+    r = await client.post("/api/models/reload")
+    assert r.status_code in (401, 403)
+
+
+@pytest.mark.asyncio
+async def test_reload_models_success(client, auth_headers):
+    r = await client.post("/api/models/reload", headers=auth_headers)
+    assert r.status_code == 200
+    data = r.json()
+    assert "models" in data
+    assert "active" in data
+    assert any(model["key"] == "gpt-oss-20b" for model in data["models"])

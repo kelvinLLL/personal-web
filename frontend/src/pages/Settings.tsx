@@ -64,7 +64,12 @@ function ServerModelSection() {
       <CardHeader className="pb-0">
         <div>
           <CardTitle>Server Models</CardTitle>
-          <p className="text-sm text-stone-400">Models configured in models.yaml</p>
+          <p className="text-sm text-stone-400">
+            Shared models configured in backend/models.yaml.
+          </p>
+          <p className="text-xs text-stone-400">
+            Switching here changes the shared server proxy only.
+          </p>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -145,9 +150,12 @@ function VisitorConfigSection() {
   return (
     <Card className="border border-stone-200 bg-white shadow-sm">
       <CardHeader className="pb-0">
-        <CardTitle>Visitor AI Configuration</CardTitle>
+        <CardTitle>Local Provider Configuration</CardTitle>
         <p className="text-sm text-stone-400">
-          Configure your own AI provider. Keys are stored locally in your browser only.
+          Configure your own AI provider for direct browser access.
+        </p>
+        <p className="text-xs text-stone-400">
+          Stored locally in this browser only. Does not add your provider to the shared server model list.
         </p>
       </CardHeader>
       <CardContent className="space-y-4">

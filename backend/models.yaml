@@ -24,6 +24,11 @@ models:
     model_id: "google/gemma-4-26b-a4b-it:free"
     provider: openrouter
 
+  gemma-4-31b:
+    name: "Gemma 4 31B (free)"
+    model_id: "google/gemma-4-31b-it:free"
+    provider: openrouter
+
   nemotron-super:
     name: "Nemotron 3 Super 120B (free)"
     model_id: "nvidia/nemotron-3-super-120b-a12b:free"
@@ -32,4 +37,34 @@ models:
   minimax-m2.7:
     name: "minimax/minimax-m2.7"
     model_id: "minimax/minimax-m2.7"
+    provider: openrouter
+
+  gpt-oss-20b:
+    name: "gpt-oss-20b (free)"
+    model_id: "openai/gpt-oss-20b:free"
+    provider: openrouter
+
+  gpt-oss-120b:
+    name: "gpt-oss-120b (free)"
+    model_id: "openai/gpt-oss-120b:free"
+    provider: openrouter
+
+  trinity-large-preview:
+    name: "Trinity Large Preview (free)"
+    model_id: "arcee-ai/trinity-large-preview:free"
+    provider: openrouter
+
+  kimi-k2:
+    name: "Kimi K2"
+    model_id: "moonshotai/kimi-k2"
+    provider: openrouter
+
+  qwen3-coder-next:
+    name: "Qwen3 Coder Next"
+    model_id: "qwen/qwen3-coder-next"
+    provider: openrouter
+
+  qwen3-max:
+    name: "Qwen3 Max"
+    model_id: "qwen/qwen3-max"
     provider: openrouter
