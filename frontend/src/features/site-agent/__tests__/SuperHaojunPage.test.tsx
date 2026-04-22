@@ -22,7 +22,7 @@ describe('SuperHaojunPage', () => {
   })
 
   it('auto-forwards to the configured standalone WebUI while keeping a manual jump button visible', () => {
-    const standaloneHref = 'http://47.99.200.227:8765'
+    const standaloneHref = 'https://agent.example.com'
     getStandaloneSuperHaojunWebUiUrl.mockReturnValue(standaloneHref)
 
     render(<SuperHaojunPage />)

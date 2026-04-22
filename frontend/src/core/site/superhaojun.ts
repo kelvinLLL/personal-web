@@ -1,7 +1,5 @@
 import { siteRoutes } from '@/core/site/routes'
 
-export const DEFAULT_SUPERHAOJUN_WEBUI_URL = 'http://47.99.200.227:8765'
-
 function trimTrailingSlashes(value: string) {
   return value.replace(/\/+$/, '')
 }
@@ -14,7 +12,11 @@ export const superHaojunRouteMeta = {
 
 export function getStandaloneSuperHaojunWebUiUrl() {
   const configuredUrl = import.meta.env.VITE_SUPERHAOJUN_WEBUI_URL?.trim()
-  return trimTrailingSlashes(configuredUrl || DEFAULT_SUPERHAOJUN_WEBUI_URL)
+  if (configuredUrl) {
+    return trimTrailingSlashes(configuredUrl)
+  }
+
+  return ''
 }
 
 export function hasStandaloneSuperHaojunWebUiUrl() {

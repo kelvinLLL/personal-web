@@ -15,7 +15,6 @@ export const SITE_DOMAIN = 'https://kelvin11888.blog';
 export const BOOK_READER_BASE = '/book-reader-legacy/';
 export const STR_VIEWER_BASE = '/str-viewer/';
 export const DAILY_NUANCE_BASE = '/daily-nuance/';
-export const DEFAULT_SUPERHAOJUN_WEBUI_URL = 'http://47.99.200.227:8765';
 export const LOCAL_DEV_ROOT_PORT = 3000;
 export const FRONTEND_DEV_PORT = 5173;
 export const BACKEND_DEV_PORT = 8000;
@@ -37,8 +36,7 @@ export function buildStrViewerEnv() {
 export function buildFrontendEnv(env = process.env) {
   return {
     VITE_BACKEND_URL: '',
-    VITE_SUPERHAOJUN_WEBUI_URL:
-      env.VITE_SUPERHAOJUN_WEBUI_URL?.trim() || DEFAULT_SUPERHAOJUN_WEBUI_URL,
+    VITE_SUPERHAOJUN_WEBUI_URL: env.VITE_SUPERHAOJUN_WEBUI_URL?.trim() || '',
   };
 }
 

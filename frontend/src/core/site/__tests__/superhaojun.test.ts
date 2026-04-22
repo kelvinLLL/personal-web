@@ -6,10 +6,10 @@ describe('SuperHaojun route helpers', () => {
     vi.unstubAllEnvs()
   })
 
-  it('uses the temporary Aliyun runtime URL when no override is configured', () => {
+  it('does not invent a standalone runtime URL in dev', () => {
     vi.stubEnv('VITE_SUPERHAOJUN_WEBUI_URL', '')
 
-    expect(getStandaloneSuperHaojunWebUiUrl()).toBe('http://47.99.200.227:8765')
+    expect(getStandaloneSuperHaojunWebUiUrl()).toBe('')
   })
 
   it('uses an explicitly configured standalone runtime URL', () => {
