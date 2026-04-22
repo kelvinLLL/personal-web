@@ -35,12 +35,14 @@ test('buildDevRuntime derives a unified root origin from resolved ports', () => 
   const runtime = buildDevRuntime({
     rootPort: 3010,
     bookReaderPort: 4312,
+    strViewerPort: 4313,
     frontendPort: 5173,
     backendPort: 8000,
   });
 
   assert.equal(runtime.rootOrigin, 'http://127.0.0.1:3010');
   assert.equal(runtime.bookReaderTarget, 'http://127.0.0.1:4312');
+  assert.equal(runtime.strViewerTarget, 'http://127.0.0.1:4313');
   assert.equal(runtime.frontendTarget, 'http://127.0.0.1:5173');
   assert.equal(runtime.backendTarget, 'http://127.0.0.1:8000');
 });
@@ -49,6 +51,7 @@ test('resolveProxyTargetForRuntime routes by path prefix', () => {
   const runtime = buildDevRuntime({
     rootPort: 3010,
     bookReaderPort: 4312,
+    strViewerPort: 4313,
     frontendPort: 5173,
     backendPort: 8000,
   });
@@ -56,6 +59,8 @@ test('resolveProxyTargetForRuntime routes by path prefix', () => {
   assert.equal(resolveProxyTargetForRuntime('/', runtime), 'http://127.0.0.1:5173');
   assert.equal(resolveProxyTargetForRuntime('/book-reader-legacy/', runtime), 'http://127.0.0.1:4312');
   assert.equal(resolveProxyTargetForRuntime('/book-reader/', runtime), 'http://127.0.0.1:5173');
+  assert.equal(resolveProxyTargetForRuntime('/str-viewer/', runtime), 'http://127.0.0.1:4313');
+  assert.equal(resolveProxyTargetForRuntime('/str-viewer/assets/index.js', runtime), 'http://127.0.0.1:4313');
   assert.equal(resolveProxyTargetForRuntime('/daily-nuance/', runtime), 'http://127.0.0.1:5173');
   assert.equal(resolveProxyTargetForRuntime('/api/health', runtime), 'http://127.0.0.1:8000');
   assert.equal(resolveProxyTargetForRuntime('/api/models', runtime), 'http://127.0.0.1:8000');
@@ -65,10 +70,13 @@ test('buildFrontendDevProxyConfig includes backend and legacy reader routes for 
   const proxy = buildFrontendDevProxyConfig({
     VITE_BACKEND_URL: 'http://127.0.0.1:8800',
     VITE_BOOK_READER_URL: 'http://127.0.0.1:9900',
+    VITE_STR_VIEWER_URL: 'http://127.0.0.1:9901',
   });
 
   assert.equal(proxy['/api'].target, 'http://127.0.0.1:8800');
   assert.equal(proxy['/book-reader-legacy/'].target, 'http://127.0.0.1:9900');
   assert.equal(proxy['/book-reader-legacy/'].changeOrigin, true);
+  assert.equal(proxy['/str-viewer/'].target, 'http://127.0.0.1:9901');
+  assert.equal(proxy['/str-viewer/'].changeOrigin, true);
   assert.equal('/daily-nuance/' in proxy, false);
 });

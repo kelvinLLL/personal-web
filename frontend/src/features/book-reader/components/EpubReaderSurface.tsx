@@ -1,4 +1,5 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
+import type { Book as EpubBook, Contents, NavItem, Rendition } from 'epubjs'
 import type {
   BookCatalogItem,
   ReaderLocationUpdate,
@@ -44,6 +45,10 @@ const THEME_TOKENS = {
     link: '#7dd3fc',
   },
 } as const
+
+interface RuntimeView {
+  contents?: Contents
+}
 
 function buildReaderCss(settings: ReaderSettings) {
   const theme = THEME_TOKENS[settings.theme]
@@ -95,15 +100,36 @@ function injectReaderStyle(doc: Document, settings: ReaderSettings) {
   styleElement.textContent = buildReaderCss(settings)
 }
 
-function flattenToc(items: any[], depth = 0): TocItem[] {
+function flattenToc(items: NavItem[] = [], depth = 0): TocItem[] {
   return items.flatMap((item) => {
-    const currentItem =
-      typeof item?.label === 'string' && typeof item?.href === 'string'
-        ? [{ label: item.label.trim(), href: item.href, depth }]
-        : []
+    const currentItem = [{ label: item.label.trim(), href: item.href, depth }]
 
     return currentItem.concat(flattenToc(item?.subitems ?? [], depth + 1))
   })
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+function getRelocatedStart(location: unknown) {
+  if (!isRecord(location)) {
+    return { cfi: null, href: null }
+  }
+
+  const start = location.start
+  if (typeof start === 'string') {
+    return { cfi: start, href: null }
+  }
+
+  if (!isRecord(start)) {
+    return { cfi: null, href: null }
+  }
+
+  return {
+    cfi: typeof start.cfi === 'string' ? start.cfi : null,
+    href: typeof start.href === 'string' ? start.href : null,
+  }
 }
 
 export const EpubReaderSurface = forwardRef<EpubReaderSurfaceHandle, EpubReaderSurfaceProps>(
@@ -112,8 +138,9 @@ export const EpubReaderSurface = forwardRef<EpubReaderSurfaceHandle, EpubReaderS
     ref,
   ) {
     const containerRef = useRef<HTMLDivElement | null>(null)
-    const bookRef = useRef<any>(null)
-    const renditionRef = useRef<any>(null)
+    const bookRef = useRef<EpubBook | null>(null)
+    const renditionRef = useRef<Rendition | null>(null)
+    const savedLocationRef = useRef(savedLocation)
     const settingsRef = useRef(settings)
     const onTocLoadRef = useRef(onTocLoad)
     const onLocationChangeRef = useRef(onLocationChange)
@@ -131,6 +158,10 @@ export const EpubReaderSurface = forwardRef<EpubReaderSurfaceHandle, EpubReaderS
     useEffect(() => {
       onLocationChangeRef.current = onLocationChange
     }, [onLocationChange])
+
+    useEffect(() => {
+      savedLocationRef.current = savedLocation
+    }, [savedLocation])
 
     useImperativeHandle(
       ref,
@@ -178,9 +209,8 @@ export const EpubReaderSurface = forwardRef<EpubReaderSurfaceHandle, EpubReaderS
           bookRef.current = nextBook
           renditionRef.current = rendition
 
-          const handleRelocated = (location: any) => {
-            const cfi = location?.start?.cfi ?? location?.start ?? null
-            const href = location?.start?.href ?? null
+          const handleRelocated = (location: unknown) => {
+            const { cfi, href } = getRelocatedStart(location)
             const progress =
               typeof cfi === 'string' && nextBook.locations?.percentageFromCfi
                 ? nextBook.locations.percentageFromCfi(cfi)
@@ -193,8 +223,8 @@ export const EpubReaderSurface = forwardRef<EpubReaderSurfaceHandle, EpubReaderS
             })
           }
 
-          rendition.hooks.content.register((contents: any) => {
-            const doc = contents?.document as Document | undefined
+          rendition.hooks.content.register((contents: Contents) => {
+            const doc = contents.document
             if (doc) {
               injectReaderStyle(doc, settingsRef.current)
             }
@@ -211,7 +241,7 @@ export const EpubReaderSurface = forwardRef<EpubReaderSurfaceHandle, EpubReaderS
             onTocLoadRef.current(flattenToc(navigation?.toc ?? []))
           }
 
-          await rendition.display(savedLocation ?? undefined)
+          await rendition.display(savedLocationRef.current ?? undefined)
           if (!disposed) {
             setIsLoading(false)
           }
@@ -251,9 +281,9 @@ export const EpubReaderSurface = forwardRef<EpubReaderSurfaceHandle, EpubReaderS
         return
       }
 
-      const views = rendition.views?.() ?? []
+      const views = rendition.views?.() as RuntimeView[]
       for (const view of views) {
-        const doc = view?.contents?.document as Document | undefined
+        const doc = view.contents?.document
         if (doc) {
           injectReaderStyle(doc, settings)
         }

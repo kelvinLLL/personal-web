@@ -4,6 +4,8 @@ import {
   BACKEND_DEV_PORT,
   BOOK_READER_BASE,
   BOOK_READER_DEV_PORT,
+  STR_VIEWER_BASE,
+  STR_VIEWER_DEV_PORT,
 } from './site-config.mjs';
 
 export async function canListenOnPort(port) {
@@ -26,14 +28,16 @@ export async function chooseAvailablePort(startPort, availabilityCheck = canList
   return port;
 }
 
-export function buildDevRuntime({rootPort, bookReaderPort, frontendPort, backendPort}) {
+export function buildDevRuntime({rootPort, bookReaderPort, strViewerPort, frontendPort, backendPort}) {
   return {
     rootPort,
     bookReaderPort,
+    strViewerPort,
     frontendPort,
     backendPort,
     rootOrigin: `http://127.0.0.1:${rootPort}`,
     bookReaderTarget: `http://127.0.0.1:${bookReaderPort}`,
+    strViewerTarget: `http://127.0.0.1:${strViewerPort}`,
     frontendTarget: `http://127.0.0.1:${frontendPort}`,
     backendTarget: `http://127.0.0.1:${backendPort}`,
   };
@@ -42,6 +46,7 @@ export function buildDevRuntime({rootPort, bookReaderPort, frontendPort, backend
 export function buildFrontendDevProxyConfig(env = process.env) {
   const backendTarget = env.VITE_BACKEND_URL || `http://127.0.0.1:${BACKEND_DEV_PORT}`;
   const bookReaderTarget = env.VITE_BOOK_READER_URL || `http://127.0.0.1:${BOOK_READER_DEV_PORT}`;
+  const strViewerTarget = env.VITE_STR_VIEWER_URL || `http://127.0.0.1:${STR_VIEWER_DEV_PORT}`;
 
   return {
     '/api': {
@@ -50,6 +55,10 @@ export function buildFrontendDevProxyConfig(env = process.env) {
     },
     [BOOK_READER_BASE]: {
       target: bookReaderTarget,
+      changeOrigin: true,
+    },
+    [STR_VIEWER_BASE]: {
+      target: strViewerTarget,
       changeOrigin: true,
     },
   };
@@ -61,6 +70,9 @@ export function resolveProxyTargetForRuntime(requestPath = '/', runtime) {
   }
   if (requestPath.startsWith(BOOK_READER_BASE)) {
     return runtime.bookReaderTarget;
+  }
+  if (requestPath.startsWith(STR_VIEWER_BASE)) {
+    return runtime.strViewerTarget;
   }
   return runtime.frontendTarget;
 }

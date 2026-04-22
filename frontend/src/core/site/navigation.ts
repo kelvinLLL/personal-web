@@ -36,6 +36,12 @@ export const primaryNavigation: SiteNavigationItem[] = [
     summary: 'Open the canonical legacy reading experience.',
   },
   {
+    label: 'String Viewer',
+    href: siteRoutes.strViewer,
+    appBoundary: 'external',
+    summary: 'Decode escaped strings and inspect readable prompt text.',
+  },
+  {
     label: superHaojunRouteMeta.label,
     to: superHaojunRouteMeta.route,
     summary: superHaojunRouteMeta.summary,

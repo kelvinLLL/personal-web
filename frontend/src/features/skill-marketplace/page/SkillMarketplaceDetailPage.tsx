@@ -1,6 +1,6 @@
 import { Link, useParams } from 'react-router-dom'
 import { Badge } from '@/components/ui/badge'
-import { buttonVariants } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button-variants'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { MarketplaceCard } from '@/features/skill-marketplace/components/MarketplaceCard'
 import { MarketplaceSignalList } from '@/features/skill-marketplace/components/MarketplaceSignalList'

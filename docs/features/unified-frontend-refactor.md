@@ -6,6 +6,7 @@ entrypoints:
   - scripts/prepare-ideas-data.mjs
   - scripts/build-frontend.mjs
   - frontend/src/App.tsx
+  - scripts/build-str-viewer.mjs
   - frontend/src/app/layout/RootLayout.tsx
   - frontend/src/app/router/router.tsx
   - frontend/src/core/site/routes.ts
@@ -28,6 +29,7 @@ entrypoints:
   - frontend/src/core/site/backlog.ts
   - apps/book-reader/src/App.jsx
   - apps/book-reader/src/components/Toolbar.jsx
+  - apps/str-viewer/
 hard_constraints:
   - Follow docs/development-rules.md.
   - Keep every file under 500 lines.
@@ -54,7 +56,10 @@ design_notes:
   - Build-time Daily Nuance preparation must also tolerate deployment hosts where the generated submodule snapshot is absent and should reuse the committed frontend snapshot instead of running the live-source pipeline by default.
   - The public site should expose both a floating agent shell and a visible `SuperHaojun` launch boundary so users can intentionally move from inline help into the richer standalone WebUI without maintaining a weaker duplicate page in the SPA.
   - Legacy sub-apps launched from the SPA must preserve an explicit return path back to the unified site even after the user has crossed the app boundary.
-last_updated: 2026-04-19
+  - String Viewer is a lightweight static sub-app mounted at `/str-viewer/` and should stay outside the main React bundle.
+  - During local dev, configured child-app proxy targets are internal upstreams and must not leak into user-visible navigation URLs; `/book-reader-legacy/` should remain same-origin so the unified dev root can keep proxy ownership.
+  - Runtime launch boundaries such as `SuperHaojun` must only auto-forward when an explicit public runtime URL is configured; local dev defaults must not redirect users to a dead service.
+last_updated: 2026-04-22
 ---
 
 # Unified Frontend Refactor
@@ -170,9 +175,10 @@ Phase 1 now serves one public SPA surface from `frontend`:
 - `/ideas`
 - `/daily-nuance`
 - `/book-reader`
+- `/str-viewer/`
 - `/superhaojun`
 
-The existing reader remains available under `/book-reader-legacy/` and is still built and proxied as a separate app during the transition.
+The existing reader remains available under `/book-reader-legacy/` and is still built and proxied as a separate app during the transition. String Viewer is also built and proxied as a separate app, but unlike Book Reader it is served directly at its canonical public route instead of using an SPA transition page.
 
 Daily Nuance no longer depends on the old public Docusaurus site. Instead, the root toolchain prepares a generated snapshot and copies it into the frontend's static asset space, and the unified frontend reads that snapshot directly. The deployment-safe version of this flow must now match the Ideas snapshot behavior: when the generated submodule snapshot is absent on a build host, the committed frontend snapshot should be reused instead of silently triggering the live-source pipeline.
 
@@ -238,6 +244,7 @@ Residual risk remains intentionally limited to:
 - 2026-04-13: Integrated the unified frontend shell, home surface, Daily Nuance page, and Book Reader transition shell into `frontend`.
 - 2026-04-13: Verified focused frontend tests, frontend production build, and root Node test suite after the first integration pass.
 - 2026-04-13: Verified the unified dev stack with Playwright against `/`, `/ideas`, `/daily-nuance`, `/book-reader`, and `/book-reader-legacy/` after starting the root `npm run dev` flow.
+- 2026-04-22: Added String Viewer as a lightweight static sub-app at `/str-viewer/`, with root build/dev proxy wiring and external app-boundary navigation from the SPA.
 - 2026-04-13: Added a router contract test, removed the dead `pages/Reader.tsx` surface, and completed full root/frontend test and build verification for Phase 1.
 - 2026-04-14: Started the `Editorial Front Door` refinement pass for the homepage and ideas surfaces, with brand-led hierarchy on home and curated-first presentation on ideas.
 - 2026-04-14: Completed the home and ideas refinement pass, verified focused and full frontend suites, reran root tests/build, and confirmed the new home and ideas copy with Playwright.
@@ -259,3 +266,8 @@ Residual risk remains intentionally limited to:
 - 2026-04-19: Started a deployment and navigation hardening follow-up after ECS rollout exposed three concrete gaps: Daily Nuance prepare still falls back to a live pipeline when the generated submodule snapshot is absent, the unified frontend hides the richer `SuperHaojun` surface behind the floating shell, and the legacy reader lacks an explicit return path back to the main site.
 - 2026-04-19: Completed the deployment and navigation hardening follow-up by teaching Daily Nuance prepare to reuse the committed frontend snapshot on deployment, adding `/superhaojun` as a visible larger-surface agent route, and restoring an explicit return-to-site control inside the legacy reader toolbar.
 - 2026-04-19: Re-scoped `/superhaojun` into a thin launch boundary that jumps from the Vercel-served public site into the polished standalone WebUI running on the runtime host, replacing the weaker in-site explanatory page.
+- 2026-04-22: Started browser-driven full-surface smoke testing after `/book-reader` was observed leaking the internal legacy-reader dev target instead of staying on the same-origin `/book-reader-legacy/` proxy path.
+- 2026-04-22: Extended the smoke-test follow-up after `/superhaojun` auto-forwarded to an unstarted default dev runtime, producing a browser error page instead of the in-site floating-shell fallback.
+- 2026-04-22: Completed the browser-driven smoke follow-up by keeping local Book Reader navigation on the same-origin legacy proxy, keeping SuperHaojun on the in-site fallback unless an explicit standalone runtime is configured, and verifying Home, Ideas, Daily Nuance, Skill Marketplace, Book Reader, String Viewer, SuperHaojun, and Settings in a real browser.
+- 2026-04-22: Started PR-readiness cleanup after full frontend lint exposed pre-existing fast-refresh and EPUB reader typing violations that would block a clean merge gate.
+- 2026-04-22: Completed PR-readiness cleanup by moving button variant styling out of the component export file and tightening the EPUB reader slice onto typed `epubjs` boundaries so full frontend lint can pass.

@@ -3,6 +3,7 @@
   "outputDirectory": "dist",
   "rewrites": [
     { "source": "/book-reader-legacy/:path*", "destination": "/book-reader-legacy/:path*" },
+    { "source": "/str-viewer/:path*", "destination": "/str-viewer/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

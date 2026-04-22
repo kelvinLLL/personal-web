@@ -4,9 +4,12 @@ import assert from 'node:assert/strict';
 import {
   SITE_DOMAIN,
   BOOK_READER_BASE,
+  STR_VIEWER_BASE,
   LOCAL_DEV_ROOT_PORT,
   BOOK_READER_DEV_PORT,
+  STR_VIEWER_DEV_PORT,
   buildBookReaderEnv,
+  buildStrViewerEnv,
   buildFrontendEnv,
   buildOutputLayout,
 } from '../scripts/lib/site-config.mjs';
@@ -14,11 +17,17 @@ import {
 test('site constants expose the expected production paths', () => {
   assert.equal(SITE_DOMAIN, 'https://kelvin11888.blog');
   assert.equal(BOOK_READER_BASE, '/book-reader-legacy/');
+  assert.equal(STR_VIEWER_BASE, '/str-viewer/');
 });
 
 test('book-reader build env uses the subpath base', () => {
   const env = buildBookReaderEnv();
   assert.equal(env.VITE_BASE_PATH, '/book-reader-legacy/');
+});
+
+test('str-viewer build env uses the subpath base', () => {
+  const env = buildStrViewerEnv();
+  assert.equal(env.VITE_BASE_PATH, '/str-viewer/');
 });
 
 test('frontend production build env clears local-only backend origins', () => {
@@ -30,16 +39,18 @@ test('frontend production build env clears local-only backend origins', () => {
 test('local dev origin uses the unified root port', () => {
   assert.equal(LOCAL_DEV_ROOT_PORT, 3000);
   assert.equal(BOOK_READER_DEV_PORT, 4322);
+  assert.equal(STR_VIEWER_DEV_PORT, 4323);
 });
 
 test('root output layout mounts frontend and the legacy reader under dist', () => {
   assert.deepEqual(buildOutputLayout(), {
     frontend: 'dist',
     bookReader: 'dist/book-reader-legacy',
+    strViewer: 'dist/str-viewer',
   });
 });
 
-test('vercel.json rewrites preserve only legacy reader passthrough plus SPA fallback', async () => {
+test('vercel.json rewrites preserve static sub-app passthroughs plus SPA fallback', async () => {
   const fs = await import('node:fs/promises');
   const path = await import('node:path');
   const { ROOT_DIR } = await import('../scripts/lib/site-config.mjs');
@@ -55,6 +66,10 @@ test('vercel.json rewrites preserve only legacy reader passthrough plus SPA fall
   const bookReaderRule = rewrites.find((r) => r.source.includes('book-reader-legacy'));
   assert.ok(bookReaderRule, 'book-reader-legacy passthrough rule exists');
   assert.equal(bookReaderRule.destination, '/book-reader-legacy/:path*');
+
+  const strViewerRule = rewrites.find((r) => r.source.includes('str-viewer'));
+  assert.ok(strViewerRule, 'str-viewer passthrough rule exists');
+  assert.equal(strViewerRule.destination, '/str-viewer/:path*');
   assert.equal(
     rewrites.some((rule) => rule.source.includes('daily-nuance')),
     false,

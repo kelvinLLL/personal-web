@@ -35,6 +35,8 @@ const ideasStoreState = {
     },
   ],
   fetchIdeas,
+  loading: false,
+  error: null,
 }
 
 vi.mock('@/features/ideas/store/useIdeasStore', () => ({
@@ -102,12 +104,15 @@ describe('HomePage', () => {
     expect(screen.getByRole('link', { name: 'Check Daily Nuance' })).toBeInTheDocument()
     expect(screen.getAllByRole('link', { name: /skill marketplace/i }).length).toBeGreaterThan(0)
     expect(screen.getAllByRole('link', { name: /book reader/i }).length).toBeGreaterThan(0)
+    const stringViewerLinks = screen.getAllByRole('link', { name: /string viewer/i })
+    expect(stringViewerLinks.length).toBeGreaterThan(0)
+    expect(stringViewerLinks.some((link) => link.getAttribute('href') === '/str-viewer/')).toBe(true)
     expect(screen.getByRole('button', { name: 'Open site agent' })).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: /legacy reader/i })).not.toBeInTheDocument()
-    expect(screen.getByText('One public front door, five clear surfaces.')).toBeInTheDocument()
-    expect(screen.getByText('Start with the surface that matches your intent.')).toBeInTheDocument()
+    expect(screen.getByText('Six surfaces, one clean launch point.')).toBeInTheDocument()
+    expect(screen.getByText(/The homepage should not make you decode the site/i)).toBeInTheDocument()
     expect(screen.getByText('Signal-first Project Finder')).toBeInTheDocument()
-    expect(screen.getByText('Current Backlog')).toBeInTheDocument()
+    expect(screen.getByText('Operating Queue')).toBeInTheDocument()
     expect(screen.getByText('Daily Update Actions')).toBeInTheDocument()
     expect(screen.getAllByText('Skill Marketplace').length).toBeGreaterThanOrEqual(2)
     expect(screen.queryByText('Book Reader Rebuild')).not.toBeInTheDocument()
