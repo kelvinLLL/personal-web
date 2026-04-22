@@ -118,6 +118,8 @@
 
 - 安全组继续放行 `80`
 - 如果暂时不做 HTTPS，可以先不依赖 `443`
+- 如果 Vercel 主站临时跳转到独立 `SuperHaojun` WebUI，目前仓库默认目标是 `http://47.99.200.227:8765`
+- 这种临时直连方式还需要安全组放行 `8765`，并确保 `superhaojun-web` 对公网可访问；后续改成域名或 Nginx 反代后，应优先收回这个公网端口
 - 浏览器访问时先用：
 
 ```text
@@ -454,6 +456,7 @@ ln -sfn /srv/personal-web/backend/.env .env
 - `personal-web/backend` 继续使用自己的 `.env`
 - `apps/superhaojun` 也能复用同一份密钥
 - 后面如果你想拆成独立配置，再把这个软链接换成独立文件即可
+- Vercel 主站当前已内置 `http://47.99.200.227:8765` 作为 `/superhaojun` 的临时默认跳转目标；如果以后换域名、IP 或端口，再用 `VITE_SUPERHAOJUN_WEBUI_URL` 覆盖即可
 
 如果你还想让 standalone `SuperHaojun` 复用同一套模型配置，也可以额外考虑：
 

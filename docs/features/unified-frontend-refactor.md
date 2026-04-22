@@ -58,7 +58,7 @@ design_notes:
   - Legacy sub-apps launched from the SPA must preserve an explicit return path back to the unified site even after the user has crossed the app boundary.
   - String Viewer is a lightweight static sub-app mounted at `/str-viewer/` and should stay outside the main React bundle.
   - During local dev, configured child-app proxy targets are internal upstreams and must not leak into user-visible navigation URLs; `/book-reader-legacy/` should remain same-origin so the unified dev root can keep proxy ownership.
-  - Runtime launch boundaries such as `SuperHaojun` must only auto-forward when an explicit public runtime URL is configured; local dev defaults must not redirect users to a dead service.
+  - Runtime launch boundaries such as `SuperHaojun` may auto-forward only when they have an explicit configured public runtime URL or a documented temporary deployment default; avoid hidden localhost/dev-target redirects that send users to a dead service.
 last_updated: 2026-04-22
 ---
 
@@ -271,3 +271,4 @@ Residual risk remains intentionally limited to:
 - 2026-04-22: Completed the browser-driven smoke follow-up by keeping local Book Reader navigation on the same-origin legacy proxy, keeping SuperHaojun on the in-site fallback unless an explicit standalone runtime is configured, and verifying Home, Ideas, Daily Nuance, Skill Marketplace, Book Reader, String Viewer, SuperHaojun, and Settings in a real browser.
 - 2026-04-22: Started PR-readiness cleanup after full frontend lint exposed pre-existing fast-refresh and EPUB reader typing violations that would block a clean merge gate.
 - 2026-04-22: Completed PR-readiness cleanup by moving button variant styling out of the component export file and tightening the EPUB reader slice onto typed `epubjs` boundaries so full frontend lint can pass.
+- 2026-04-22: Updated the `SuperHaojun` launch-boundary rule for the temporary Vercel-to-Aliyun bridge: the committed public ECS URL is now treated as the documented default, while env overrides remain the path for future domain or port changes.

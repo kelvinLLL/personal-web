@@ -48,7 +48,7 @@ design_notes:
   - Long-running operations should be modeled as runs with progress and terminal states, not as opaque single-response mutations.
   - The feature boundary includes discoverability, schema design, permissions, observability, and non-committed local configuration handoff, not only the harness runtime itself.
   - The public frontend should pair the floating chat shell with a visible launch boundary into the richer standalone WebUI so users can move intentionally from inline help into the canonical runtime surface.
-last_updated: 2026-04-19
+last_updated: 2026-04-22
 ---
 
 # Agent Harness Integration
@@ -195,6 +195,7 @@ Out of scope:
   - `/superhaojun` now acts as a thin launch boundary that auto-forwards into the standalone `superhaojun-web` app when a runtime URL is configured
   - the standalone `superhaojun-web` app is therefore the canonical public runtime surface, while the main site keeps only the launcher and the inline floating shell
 - the Vercel/static frontend build must preserve an explicitly configured `VITE_SUPERHAOJUN_WEBUI_URL` so the public launch boundary can point from the static domain to the Aliyun-hosted WebUI; only local-only backend origins should be cleared by the production build helper
+- as a short-term deployment bridge, the public frontend may commit the Aliyun WebUI URL `http://47.99.200.227:8765` as the default `SuperHaojun` launch target so Vercel can redirect into the ECS-hosted runtime without a required environment override; `VITE_SUPERHAOJUN_WEBUI_URL` must still override this default when the IP, port, or domain changes
 - production deployment for the integrated agent slice should target `personal-web`; `apps/superhaojun` is an implementation dependency via submodule, not a separately deployed public product in this setup
 - the shipped Task 4 frontend slice stays intentionally narrow:
   - mount the shell once from `RootLayout`
@@ -258,6 +259,7 @@ Out of scope:
 - 2026-04-19: Clarified the deployment boundary: production rollout for the integrated website agent should deploy `personal-web` and update the `apps/superhaojun` submodule, not deploy `SuperHaojun` as a separate public app for this website setup.
 - 2026-04-19: Synced the mounted `apps/superhaojun` submodule to upstream commit `ad9c8b9fa8737276a33ff40fc3f61d5f6c589ebb` before deployment-oriented documentation updates.
 - 2026-04-19: Extended the `personal-web` Aliyun deployment guide with first-server buying guidance for the integrated site: `2C2G` is acceptable for initial rollout, `2C4G` remains the safer headroom choice, single-instance deployment does not need `ALB`, and default `VPC` / `vSwitch` selection is acceptable until the site grows beyond one ECS.
+- 2026-04-22: Made the temporary Aliyun WebUI handoff explicit: Vercel/static builds should default `/superhaojun` to `http://47.99.200.227:8765` while still allowing `VITE_SUPERHAOJUN_WEBUI_URL` to override the target later.
 - 2026-04-19: Corrected the runtime-config boundary after live verification: the website-integrated agent path currently reads `backend/models.yaml` and `backend/.env` by default because the mounted runtime is built from the backend process working directory; `apps/superhaojun/.env` is only required when running the submodule directly outside the website integration path.
 - 2026-04-22: Started a Vercel handoff fix after live inspection showed the static frontend was deployed at the latest commit, but the production build helper still cleared `VITE_SUPERHAOJUN_WEBUI_URL`, causing `/superhaojun` to fall back to the floating shell instead of jumping to the Aliyun-hosted WebUI.
 - 2026-04-22: Completed the Vercel handoff fix by preserving explicitly configured `VITE_SUPERHAOJUN_WEBUI_URL` during root frontend builds while still clearing local-only backend origins.
