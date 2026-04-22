@@ -1,52 +1,93 @@
 import { Link } from 'react-router-dom'
-import { buttonVariants } from '@/components/ui/button'
+import { ArrowRight, Bot, BookOpenText, Sparkles } from 'lucide-react'
+import heroImage from '@/assets/hero.png'
+import { buttonVariants } from '@/components/ui/button-variants'
 import { siteRoutes } from '@/core/site/routes'
 
 export function HomeHero() {
   return (
-    <section className="relative overflow-hidden rounded-[2rem] border border-stone-200 bg-stone-950 px-8 py-14 text-white shadow-xl sm:px-12 sm:py-16">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.2),_transparent_35%),radial-gradient(circle_at_bottom_right,_rgba(245,158,11,0.14),_transparent_28%)]" />
-      <div className="absolute inset-0 opacity-[0.08] [background-image:linear-gradient(to_right,#fff_1px,transparent_1px),linear-gradient(to_bottom,#fff_1px,transparent_1px)] [background-size:36px_36px]" />
+    <section className="relative overflow-hidden rounded-lg border border-zinc-200 bg-zinc-950 text-white shadow-sm">
+      <div className="absolute inset-0 opacity-[0.08] [background-image:linear-gradient(to_right,#fff_1px,transparent_1px),linear-gradient(to_bottom,#fff_1px,transparent_1px)] [background-size:32px_32px]" />
 
-      <div className="relative z-10 max-w-3xl space-y-6">
-        <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-zinc-200">
-          Unified Frontend
+      <div className="relative z-10 grid gap-8 px-6 py-10 md:grid-cols-[1.15fr_0.85fr] md:px-8 md:py-12">
+        <div className="flex min-w-0 flex-col justify-between gap-8">
+          <div className="space-y-6">
+            <div className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/15 bg-white/8 px-4 text-xs font-semibold uppercase tracking-[0.14em] text-zinc-200">
+              <Sparkles className="size-4 text-blue-300" aria-hidden="true" />
+              Unified Personal Web
+            </div>
+
+            <div className="max-w-3xl space-y-4">
+              <h1 className="text-4xl font-semibold leading-tight text-white">
+                Kelvin's Creative Lab
+              </h1>
+              <p className="max-w-2xl text-lg leading-8 text-zinc-200">
+                A focused front door for ideas, daily signals, reading, skills, and the
+                SuperHaojun agent surface.
+              </p>
+              <p className="max-w-2xl text-sm leading-7 text-zinc-400">
+                Pick a surface, scan what is moving, and jump into the tool that matches the work.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            <Link
+              to={siteRoutes.ideas}
+              className={buttonVariants({
+                variant: 'default',
+                className:
+                  'min-h-11 gap-2 bg-white px-4 text-zinc-950 hover:bg-zinc-200 focus-visible:ring-white/40',
+              })}
+            >
+              Explore Ideas
+              <ArrowRight className="size-4" aria-hidden="true" />
+            </Link>
+            <Link
+              to={siteRoutes.dailyNuance}
+              className={buttonVariants({
+                variant: 'outline',
+                className:
+                  'min-h-11 gap-2 border-white/20 bg-white/5 px-4 text-white hover:bg-white/10 hover:text-white focus-visible:ring-white/40',
+              })}
+            >
+              Check Daily Nuance
+              <ArrowRight className="size-4" aria-hidden="true" />
+            </Link>
+          </div>
         </div>
 
-        <div className="space-y-4">
-          <h1 className="text-4xl font-semibold tracking-tight sm:text-6xl">
-            Kelvin&apos;s Creative Lab
-          </h1>
-          <p className="max-w-2xl text-lg leading-8 text-zinc-200 sm:text-xl">
-            A quieter front door for experiments worth building, signals worth watching, and a
-            reading space worth keeping calm.
-          </p>
-          <p className="max-w-2xl text-sm leading-7 text-zinc-400 sm:text-base">
-            The hero sets tone. The sections below make the tools easy to grasp without turning the
-            homepage into a dashboard.
-          </p>
-        </div>
+        <div className="grid gap-4 md:content-between">
+          <div className="rounded-lg border border-white/10 bg-white/7 p-4">
+            <img
+              src={heroImage}
+              alt="Layered abstract interface tile for Kelvin's Creative Lab"
+              width={343}
+              height={361}
+              className="mx-auto aspect-square max-h-64 w-full max-w-64 object-contain"
+            />
+          </div>
 
-        <div className="flex flex-wrap gap-3">
-          <Link
-            to={siteRoutes.ideas}
-            className={buttonVariants({
-              variant: 'default',
-              className: 'bg-white text-stone-950 hover:bg-zinc-200',
-            })}
-          >
-            Explore Ideas
-          </Link>
-          <Link
-            to={siteRoutes.dailyNuance}
-            className={buttonVariants({
-              variant: 'outline',
-              className:
-                'border-white/20 bg-transparent text-white hover:bg-white/10 hover:text-white',
-            })}
-          >
-            Check Daily Nuance
-          </Link>
+          <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2">
+            <div className="rounded-lg border border-white/10 bg-white/7 p-4">
+              <div className="flex items-center gap-2 whitespace-nowrap text-sm font-semibold text-white">
+                <BookOpenText className="size-4 text-blue-300" aria-hidden="true" />
+                Calm Reading
+              </div>
+              <p className="mt-2 text-sm leading-6 text-zinc-400">
+                The incumbent reader stays easy to reach from the unified site.
+              </p>
+            </div>
+            <div className="rounded-lg border border-white/10 bg-white/7 p-4">
+              <div className="flex items-center gap-2 whitespace-nowrap text-sm font-semibold text-white">
+                <Bot className="size-4 text-emerald-300" aria-hidden="true" />
+                Agent Surface
+              </div>
+              <p className="mt-2 text-sm leading-6 text-zinc-400">
+                SuperHaojun remains a deliberate launch boundary for deeper work.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </section>

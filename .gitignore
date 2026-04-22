@@ -1,5 +1,8 @@
 dist/
 node_modules/
+.playwright-cli/
+.vscode/
+output/
 portal/node_modules/
 portal/.astro/
 .superpowers/
@@ -11,5 +14,8 @@ frontend/node_modules/
 backend/.venv/
 backend/.env
 backend/data/ideas.json
+data/ideas.json
+apps/str-viewer/design-system/
 __pycache__/
 *.pyc
+*.tsbuildinfo

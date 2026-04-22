@@ -5,6 +5,7 @@ export const siteRoutes = {
   skillMarketplace: '/skill-marketplace',
   bookReader: '/book-reader',
   legacyReader: '/book-reader-legacy/',
+  strViewer: '/str-viewer/',
   superhaojun: '/superhaojun',
   settings: '/settings',
 } as const

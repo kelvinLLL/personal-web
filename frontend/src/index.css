@@ -14,7 +14,7 @@
   --color-text-secondary: #78716c;
   --color-border: #e7e5e4;
   --color-accent: #f59e0b;
-  --background: oklch(1 0 0);
+  --background: oklch(0.985 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
@@ -48,16 +48,6 @@
   --sidebar-ring: oklch(0.708 0 0);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-bg: #0c0a09;
-    --color-surface: #1c1917;
-    --color-text: #fafaf9;
-    --color-text-secondary: #a8a29e;
-    --color-border: #292524;
-  }
-}
-
 body {
   font-family: 'Geist Variable', sans-serif;
   background-color: var(--color-bg);
@@ -83,6 +73,21 @@ main {
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  main {
+    animation: none;
+  }
 }
 
 @theme inline {

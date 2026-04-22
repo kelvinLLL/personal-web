@@ -13,6 +13,9 @@ import {
   BOOK_READER_BASE,
   BOOK_READER_DEV_PORT,
   BOOK_READER_DIR,
+  STR_VIEWER_BASE,
+  STR_VIEWER_DEV_PORT,
+  STR_VIEWER_DIR,
   LOCAL_DEV_ROOT_PORT,
   FRONTEND_DEV_PORT,
   FRONTEND_DIR,
@@ -56,11 +59,13 @@ const reserved = new Set();
 runtime = buildDevRuntime({
   rootPort: await chooseAvailablePort(LOCAL_DEV_ROOT_PORT, undefined, reserved),
   bookReaderPort: await chooseAvailablePort(BOOK_READER_DEV_PORT, undefined, reserved),
+  strViewerPort: await chooseAvailablePort(STR_VIEWER_DEV_PORT, undefined, reserved),
   frontendPort: await chooseAvailablePort(FRONTEND_DEV_PORT, undefined, reserved),
   backendPort: await chooseAvailablePort(BACKEND_DEV_PORT, undefined, reserved),
 });
 
 await ensureInstall(BOOK_READER_DIR);
+await ensureInstall(STR_VIEWER_DIR);
 await ensureInstall(FRONTEND_DIR);
 run('node', ['scripts/prepare-daily-nuance-data.mjs'], {cwd: ROOT_DIR});
 
@@ -75,12 +80,23 @@ register(
 );
 
 register(
+  spawnProcess('npm', ['run', 'dev', '--', '--host', '127.0.0.1', '--port', String(runtime.strViewerPort)], {
+    cwd: STR_VIEWER_DIR,
+    env: {
+      BROWSER: 'none',
+      VITE_BASE_PATH: STR_VIEWER_BASE,
+    },
+  }),
+);
+
+register(
   spawnProcess('npm', ['run', 'dev', '--', '--host', '127.0.0.1', '--port', String(runtime.frontendPort)], {
     cwd: FRONTEND_DIR,
     env: {
       BROWSER: 'none',
       VITE_BACKEND_URL: runtime.backendTarget,
       VITE_BOOK_READER_URL: runtime.bookReaderTarget,
+      VITE_STR_VIEWER_URL: runtime.strViewerTarget,
     },
   }),
 );
@@ -120,4 +136,5 @@ server.listen(runtime.rootPort, '127.0.0.1', () => {
   console.log(`Frontend -> ${runtime.frontendTarget}/`);
   console.log(`Backend -> ${runtime.backendTarget}/api/`);
   console.log(`Book Reader -> ${runtime.bookReaderTarget}${BOOK_READER_BASE}`);
+  console.log(`String Viewer -> ${runtime.strViewerTarget}${STR_VIEWER_BASE}`);
 });

@@ -6,5 +6,6 @@ run('node', ['scripts/prepare-daily-nuance-data.mjs'], {cwd: ROOT_DIR});
 run('node', ['scripts/prepare-ideas-data.mjs'], {cwd: ROOT_DIR});
 run('node', ['scripts/build-frontend.mjs'], {cwd: ROOT_DIR});
 run('node', ['scripts/build-book-reader.mjs'], {cwd: ROOT_DIR});
+run('node', ['scripts/build-str-viewer.mjs'], {cwd: ROOT_DIR});
 
-console.log('Unified frontend and legacy reader built successfully.');
+console.log('Unified frontend, legacy reader, and String Viewer built successfully.');
