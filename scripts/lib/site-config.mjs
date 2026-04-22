@@ -33,10 +33,10 @@ export function buildStrViewerEnv() {
   };
 }
 
-export function buildFrontendEnv() {
+export function buildFrontendEnv(env = process.env) {
   return {
     VITE_BACKEND_URL: '',
-    VITE_SUPERHAOJUN_WEBUI_URL: '',
+    VITE_SUPERHAOJUN_WEBUI_URL: env.VITE_SUPERHAOJUN_WEBUI_URL?.trim() || '',
   };
 }
 

@@ -36,6 +36,16 @@ test('frontend production build env clears local-only backend origins', () => {
   assert.equal(env.VITE_SUPERHAOJUN_WEBUI_URL, '');
 });
 
+test('frontend production build env preserves an explicit SuperHaojun WebUI URL', () => {
+  const env = buildFrontendEnv({
+    VITE_BACKEND_URL: 'http://127.0.0.1:8000',
+    VITE_SUPERHAOJUN_WEBUI_URL: 'http://47.99.200.227:8765',
+  });
+
+  assert.equal(env.VITE_BACKEND_URL, '');
+  assert.equal(env.VITE_SUPERHAOJUN_WEBUI_URL, 'http://47.99.200.227:8765');
+});
+
 test('local dev origin uses the unified root port', () => {
   assert.equal(LOCAL_DEV_ROOT_PORT, 3000);
   assert.equal(BOOK_READER_DEV_PORT, 4322);

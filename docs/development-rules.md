@@ -18,6 +18,7 @@ Use it for project-wide constraints and durable insights that should influence f
 - Feature docs must reflect current code reality, not only intended future state.
 - When documentation or backlog status needs to appear in the UI, mirror the needed state into a small typed frontend module instead of parsing markdown at runtime.
 - When one surface links to a separately served app, treat that target as an external app boundary in the SPA. Do not route to it with in-app client routing primitives just because the path looks same-origin.
+- Production build helpers may clear local-only backend origins, but they must not erase explicitly configured external app origins such as a standalone `SuperHaojun` WebUI URL.
 - Do not hide important workflow entrypoints just because execution is permission-gated. Keep the CTA visible and surface the auth requirement at execution time.
 - When a replacement surface is materially worse than the incumbent, collapse the public entry back to the incumbent instead of maintaining two competing product paths.
 - When a public read surface must still work on static hosting, mirror a build-time snapshot into frontend assets and let the UI fall back to that snapshot instead of assuming a live `/api/*` backend will always exist.

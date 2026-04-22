@@ -194,6 +194,7 @@ Out of scope:
   - the floating shell remains the lightweight cross-site entry for site-owned capabilities
   - `/superhaojun` now acts as a thin launch boundary that auto-forwards into the standalone `superhaojun-web` app when a runtime URL is configured
   - the standalone `superhaojun-web` app is therefore the canonical public runtime surface, while the main site keeps only the launcher and the inline floating shell
+- the Vercel/static frontend build must preserve an explicitly configured `VITE_SUPERHAOJUN_WEBUI_URL` so the public launch boundary can point from the static domain to the Aliyun-hosted WebUI; only local-only backend origins should be cleared by the production build helper
 - production deployment for the integrated agent slice should target `personal-web`; `apps/superhaojun` is an implementation dependency via submodule, not a separately deployed public product in this setup
 - the shipped Task 4 frontend slice stays intentionally narrow:
   - mount the shell once from `RootLayout`
@@ -258,6 +259,8 @@ Out of scope:
 - 2026-04-19: Synced the mounted `apps/superhaojun` submodule to upstream commit `ad9c8b9fa8737276a33ff40fc3f61d5f6c589ebb` before deployment-oriented documentation updates.
 - 2026-04-19: Extended the `personal-web` Aliyun deployment guide with first-server buying guidance for the integrated site: `2C2G` is acceptable for initial rollout, `2C4G` remains the safer headroom choice, single-instance deployment does not need `ALB`, and default `VPC` / `vSwitch` selection is acceptable until the site grows beyond one ECS.
 - 2026-04-19: Corrected the runtime-config boundary after live verification: the website-integrated agent path currently reads `backend/models.yaml` and `backend/.env` by default because the mounted runtime is built from the backend process working directory; `apps/superhaojun/.env` is only required when running the submodule directly outside the website integration path.
+- 2026-04-22: Started a Vercel handoff fix after live inspection showed the static frontend was deployed at the latest commit, but the production build helper still cleared `VITE_SUPERHAOJUN_WEBUI_URL`, causing `/superhaojun` to fall back to the floating shell instead of jumping to the Aliyun-hosted WebUI.
+- 2026-04-22: Completed the Vercel handoff fix by preserving explicitly configured `VITE_SUPERHAOJUN_WEBUI_URL` during root frontend builds while still clearing local-only backend origins.
 - 2026-04-19: Replaced the temporary integrated `/superhaojun` explanatory page with a thin launch boundary so the Vercel-served site now hands users into the Aliyun-hosted standalone WebUI instead of duplicating it.
 - 2026-04-19: Recorded the next-stage product demand that the website agent may eventually need constrained server-side file mutation abilities when deployed on its own ECS host, but this is not part of the current public capability slice and should stay backlog-tracked until a dedicated operator-safe design is written.
 - 2026-04-19: Started a public-surface follow-up after deployment review showed the floating shell alone under-exposed the richer runtime story; the integrated site now needs a visible larger-surface `SuperHaojun` entry that complements, rather than replaces, the floating shell.
