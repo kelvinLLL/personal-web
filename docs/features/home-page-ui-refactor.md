@@ -1,6 +1,8 @@
 ---
 status: implemented
 entrypoints:
+  - README.md
+  - frontend/src/core/site/deployment.ts
   - frontend/src/features/home/page/HomePage.tsx
   - frontend/src/features/home/components/HomeHero.tsx
   - frontend/src/features/home/components/FeatureGrid.tsx
@@ -22,7 +24,8 @@ design_notes:
   - Prefer full-width bands and unframed layouts over nested card stacks; cards are acceptable for repeated entries and preview items.
   - Motion should be short, purposeful, and disabled under prefers-reduced-motion.
   - Do not rely on automatic `prefers-color-scheme` dark variables unless every affected surface has matching dark-mode text and surface treatments.
-last_updated: 2026-04-22
+  - Temporary infrastructure handoffs from the homepage must be explicit external CTAs, not hidden automatic redirects.
+last_updated: 2026-04-23
 ---
 
 # Home Page UI Refactor
@@ -52,8 +55,12 @@ Out of scope:
 
 - `frontend/src/features/home/page/HomePage.tsx`
   - owns the homepage section order and page-level spacing
+- `frontend/src/core/site/deployment.ts`
+  - owns temporary deployment handoff URLs used by homepage CTAs, including the Aliyun public service link
 - `frontend/src/features/home/components/HomeHero.tsx`
   - owns the first-viewport brand signal, primary CTAs, and compact status cues
+- `README.md`
+  - documents how to update the Aliyun service that the homepage public-IP CTA points to
 - `frontend/src/features/home/components/FeatureGrid.tsx`
   - renders the repeated product entrypoints and must preserve external app-boundary semantics
 - `frontend/src/features/home/components/RoadmapSection.tsx`
@@ -85,8 +92,11 @@ The implemented version now uses the existing hero bitmap as the first-viewport 
 
 The homepage feature grid now includes String Viewer as a same-origin external app boundary from the separate String Viewer integration feature.
 
+The homepage Hero now includes a temporary `Open Aliyun Service` external CTA. This keeps the Vercel-hosted static domain intact while giving users a deliberate way to jump into the full ECS-hosted service at the public IP. The button is intentionally a manual app-boundary handoff rather than an automatic redirect, because the Aliyun deployment is still being stabilized before any domain cutover.
+
 ## Change Notes
 
 - 2026-04-22: Created the narrow homepage UI refactor doc before code changes and recorded the ui-ux-pro-max design direction.
 - 2026-04-22: Implemented the homepage visual refactor, updated focused tests, added reduced-motion safeguards, and verified desktop plus 375px mobile rendering with no horizontal overflow.
 - 2026-04-22: Surfaced String Viewer in the homepage entry grid as an external app-boundary card owned by the String Viewer integration slice.
+- 2026-04-23: Added a temporary Hero CTA from the Vercel-static homepage to the Aliyun public-IP service and documented the ECS update flow in the root README.

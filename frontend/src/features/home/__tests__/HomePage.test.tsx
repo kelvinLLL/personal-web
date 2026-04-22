@@ -102,6 +102,9 @@ describe('HomePage', () => {
 
     expect(screen.getByRole('link', { name: 'Explore Ideas' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Check Daily Nuance' })).toBeInTheDocument()
+    const aliyunServiceLink = screen.getByRole('link', { name: 'Open Aliyun Service' })
+    expect(aliyunServiceLink).toHaveAttribute('href', 'http://47.99.200.227')
+    expect(aliyunServiceLink).toHaveAttribute('data-app-boundary', 'external')
     expect(screen.getAllByRole('link', { name: /skill marketplace/i }).length).toBeGreaterThan(0)
     expect(screen.getAllByRole('link', { name: /book reader/i }).length).toBeGreaterThan(0)
     const stringViewerLinks = screen.getAllByRole('link', { name: /string viewer/i })

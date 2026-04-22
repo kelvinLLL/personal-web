@@ -4,93 +4,99 @@ Unified production entrypoint for `kelvin11888.blog`.
 
 ## Structure
 
-- `portal/`: Astro homepage and future personal-site shell
-- `apps/book-reader`: git submodule pointing to `kelvinLLL/Hello-`
-- `apps/daily-nuance`: git submodule pointing to `kelvinLLL/nuance`
-- `apps/superhaojun`: git submodule pointing to `kelvinLLL/SuperHaojun`
-- `dist/`: final deployable output for Vercel
+- `frontend/`: main React public site
+- `backend/`: FastAPI API service
+- `apps/book-reader`: legacy reader submodule
+- `apps/daily-nuance`: nuance data/source submodule
+- `apps/superhaojun`: SuperHaojun runtime submodule
+- `apps/str-viewer`: lightweight static string viewer
+- `dist/`: final static output served by Vercel or nginx
 
-## First-time setup
+## Current Deployment Shape
+
+The temporary production shape is intentionally simple:
+
+- Vercel serves the static public domain, including the homepage.
+- The homepage includes an `Open Aliyun Service` button pointing to `http://47.99.200.227`.
+- Aliyun ECS runs the full `personal-web` service behind nginx and FastAPI.
+- No domain binding to Aliyun is required yet.
+
+## First-Time Setup
 
 ```bash
+npm install
 git submodule update --init --recursive
 ```
 
-## Build everything
+## Local Development
+
+```bash
+npm run dev
+```
+
+This starts one local entrypoint printed in the terminal. The root dev proxy owns the public paths and forwards to the frontend, backend, and sub-app dev servers as needed.
+
+## Build Everything
 
 ```bash
 npm run build
 ```
 
-This assembles:
+This assembles the main frontend plus static sub-app outputs into `dist/`.
 
-- `/`
-- `/book-reader/`
-- `/daily-nuance/`
-
-## Build one section
-
-```bash
-npm run build:portal
-npm run build:book-reader
-npm run build:daily-nuance
-```
-
-## Unified local development
-
-```bash
-npm install
-npm run dev
-```
-
-This starts one local entrypoint at:
-
-- one unified root URL printed in the terminal
-- plus matching `/book-reader/` and `/daily-nuance/` subpaths under that same origin
-
-How it works:
-
-- Astro runs the portal homepage on a local dev port.
-- Vite runs `book-reader` on a separate local dev port with `VITE_BASE_PATH=/book-reader/`.
-- Docusaurus runs `daily-nuance` on another local dev port with `BASE_URL=/daily-nuance/`.
-- A small Node reverse proxy forwards the browser request to the right dev server by path prefix, so it feels like one site.
-
-If `3000`, `4321`, `4322`, or `4323` are already in use, the script now automatically picks the next available ports and prints the exact URLs you should open.
-
-`uv` is still used for `daily-nuance`, because that project has a Python data pipeline behind the Docusaurus UI.
-
-By default, `npm run dev` reuses the latest generated `daily-nuance` data if it already exists, so startup stays fast.
-
-If you want a fresh data pull before local testing:
-
-```bash
-npm run refresh:daily-nuance
-```
-
-If you want startup itself to force a refresh:
-
-```bash
-DAILY_NUANCE_REFRESH=1 npm run dev
-```
-
-## Update submodules after upstream changes
+## Update Submodules After Upstream Changes
 
 ```bash
 git submodule update --remote --merge
 ```
 
-## Deploy
+## Vercel Deploy
 
 Connect this repo to Vercel and set:
 
 - Build Command: `npm run build`
 - Output Directory: `dist`
 
-Bind the custom domain:
+The Vercel homepage button target is currently defined in:
 
-- `kelvin11888.blog`
+```text
+frontend/src/core/site/deployment.ts
+```
 
-If you want to deploy the unified website on your own server instead of Vercel:
+## Update Aliyun Service
 
-- follow [阿里云部署指南](docs/integrations/deploying-personal-web-on-alicloud.md)
-- deploy `personal-web`, not `apps/superhaojun` separately
+Use this when code has been pushed to GitHub and you want the ECS public IP service to show the latest site:
+
+```bash
+cd /srv/personal-web
+
+git status --short --branch
+git pull --ff-only
+git submodule update --init --recursive
+
+npm ci
+npm run build
+
+cd /srv/personal-web/backend
+uv sync
+
+sudo systemctl restart personal-web-backend
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+Then verify:
+
+```bash
+curl -s http://47.99.200.227 | grep -o 'assets/index-[^"]*\.js'
+curl http://127.0.0.1:8000/api/health
+sudo systemctl status personal-web-backend --no-pager
+```
+
+If the browser still shows an old page, hard refresh first. If it is still stale, inspect nginx:
+
+```bash
+sudo nginx -T | grep -n -A8 -B4 "root /srv/personal-web/dist"
+```
+
+Full server guidance lives in [阿里云部署指南](docs/integrations/deploying-personal-web-on-alicloud.md). Deploy `personal-web`; do not deploy `apps/superhaojun` as the main website.

@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight, Bot, BookOpenText, Sparkles } from 'lucide-react'
+import { ArrowRight, ArrowUpRight, Bot, BookOpenText, Sparkles } from 'lucide-react'
 import heroImage from '@/assets/hero.png'
 import { buttonVariants } from '@/components/ui/button-variants'
+import { aliyunPublicServiceUrl } from '@/core/site/deployment'
 import { siteRoutes } from '@/core/site/routes'
 
 export function HomeHero() {
@@ -54,6 +55,18 @@ export function HomeHero() {
               Check Daily Nuance
               <ArrowRight className="size-4" aria-hidden="true" />
             </Link>
+            <a
+              href={aliyunPublicServiceUrl}
+              data-app-boundary="external"
+              className={buttonVariants({
+                variant: 'outline',
+                className:
+                  'min-h-11 gap-2 border-blue-300/35 bg-blue-300/10 px-4 text-blue-50 hover:bg-blue-300/18 hover:text-white focus-visible:ring-blue-200/50',
+              })}
+            >
+              Open Aliyun Service
+              <ArrowUpRight className="size-4" aria-hidden="true" />
+            </a>
           </div>
         </div>
 

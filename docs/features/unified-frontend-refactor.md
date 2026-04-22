@@ -1,5 +1,6 @@
 status: in_progress
 entrypoints:
+  - README.md
   - scripts/dev-all.mjs
   - scripts/build-all.mjs
   - scripts/prepare-daily-nuance-data.mjs
@@ -12,6 +13,7 @@ entrypoints:
   - frontend/src/core/site/routes.ts
   - frontend/src/core/site/legacyReader.ts
   - frontend/src/core/site/superhaojun.ts
+  - frontend/src/core/site/deployment.ts
   - frontend/src/core/site/navigation.ts
   - frontend/src/lib/apiClient.ts
   - frontend/public/data/ideas/latest.json
@@ -59,7 +61,8 @@ design_notes:
   - String Viewer is a lightweight static sub-app mounted at `/str-viewer/` and should stay outside the main React bundle.
   - During local dev, configured child-app proxy targets are internal upstreams and must not leak into user-visible navigation URLs; `/book-reader-legacy/` should remain same-origin so the unified dev root can keep proxy ownership.
   - Runtime launch boundaries such as `SuperHaojun` must only auto-forward when an explicit public runtime URL is configured; local dev defaults and raw cloud IP assumptions must not redirect users to a dead service.
-last_updated: 2026-04-22
+  - While the domain remains on Vercel static hosting, the homepage may expose one explicit external CTA into the Aliyun ECS service by public IP; this is a user-initiated whole-site handoff, not an automatic route redirect.
+last_updated: 2026-04-23
 ---
 
 # Unified Frontend Refactor
@@ -94,6 +97,8 @@ Out of scope:
   - implementation plan for the refactor
 - `docs/features/unified-frontend-refactor.md`
   - living feature doc for the refactor
+- `README.md`
+  - quick-start and deployment-operations handoff, including the current Vercel static homepage to Aliyun public-IP service flow
 - `scripts/dev-all.mjs`
   - starts the unified local dev stack and proxies the frontend, backend, and legacy reader through one root URL
 - `scripts/build-all.mjs`
@@ -116,6 +121,8 @@ Out of scope:
   - centralizes the canonical legacy-reader URL and app-boundary behavior for both dev and deployed environments
 - `frontend/src/core/site/superhaojun.ts`
   - centralizes the standalone `SuperHaojun` route metadata, runtime WebUI URL, and launch-boundary redirect helper so the public site can hand users into the canonical external runtime surface without scattering link logic
+- `frontend/src/core/site/deployment.ts`
+  - centralizes temporary deployment handoff targets, including the Aliyun public service URL used by the Vercel-static homepage CTA
 - `frontend/src/core/site/navigation.ts`
   - shared navigation and homepage-card model for the public surface, including the canonical book-reader and `SuperHaojun` entry copy
 - `frontend/src/lib/apiClient.ts`
@@ -225,6 +232,10 @@ That refinement is now implemented in the current frontend:
   - legacy-reader links are rendered as external app boundaries instead of SPA-internal routes
   - Daily Nuance snapshot badges now use explicit high-contrast treatment
   - Ideas always exposes the daily-update workflow entry and shows auth guidance when admin access is missing
+- the current temporary deployment bridge is manual and homepage-scoped:
+  - Vercel keeps serving the public domain as a static site
+  - the homepage Hero exposes `Open Aliyun Service` as an explicit external CTA to `http://47.99.200.227`
+  - the README owns the short operational flow for updating the ECS copy: pull, update submodules, rebuild `dist`, sync backend dependencies, restart backend, and reload nginx
 
 Residual risk remains intentionally limited to:
 
@@ -235,6 +246,7 @@ Residual risk remains intentionally limited to:
 - production behavior of backend-driven ideas surfaces still depending on whether a real `/api/*` backend is deployed behind the static frontend
 - public Ideas reads now expected to degrade to a mirrored static snapshot on pure static deployments, while write and workflow operations still require a live backend
 - the standalone `SuperHaojun` WebUI still depending on separate runtime configuration and hosting even though the unified site now treats it as the canonical public runtime surface
+- the Vercel homepage temporarily needing a visible manual jump into the Aliyun public-IP service until the hosted app is stable enough for a domain or reverse-proxy cutover
 
 ## Change Notes
 
@@ -273,3 +285,4 @@ Residual risk remains intentionally limited to:
 - 2026-04-22: Completed PR-readiness cleanup by moving button variant styling out of the component export file and tightening the EPUB reader slice onto typed `epubjs` boundaries so full frontend lint can pass.
 - 2026-04-22: Updated the `SuperHaojun` launch-boundary rule for the temporary Vercel-to-Aliyun bridge: the committed public ECS URL is now treated as the documented default, while env overrides remain the path for future domain or port changes.
 - 2026-04-22: Reverted the temporary Vercel-to-Aliyun default after cloud bring-up showed the raw WebUI service is not stable enough to assume; the launch boundary again requires an explicit configured runtime URL before redirecting.
+- 2026-04-23: Started a lighter Vercel-to-Aliyun bridge: keep Vercel as the static domain host, add a manual homepage CTA to the Aliyun public-IP service, and document the server update flow in the root README.

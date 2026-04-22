@@ -118,6 +118,8 @@
 
 - 安全组继续放行 `80`
 - 如果暂时不做 HTTPS，可以先不依赖 `443`
+- 当前 Vercel 静态首页会提供一个手动跳转按钮，指向 ECS 公网服务 `http://47.99.200.227`
+- 这个跳转是首页里的显式外链，不要求你把域名解析到阿里云，也不会自动把所有 Vercel 路由代理到 ECS
 - Vercel 主站默认不会直连独立 `SuperHaojun` WebUI；只有你显式配置 `VITE_SUPERHAOJUN_WEBUI_URL` 后才会从 `/superhaojun` 跳转过去
 - 如果临时配置公网 IP 加 `8765` 直连 WebUI，需要额外放行 `8765` 并确保 `superhaojun-web` 已常驻；后续改成域名或 Nginx 反代后，应优先收回这个公网端口
 - 浏览器访问时先用：
@@ -396,20 +398,28 @@ sudo certbot --nginx -d yourdomain.com -d www.yourdomain.com
 
 ```bash
 cd /srv/personal-web
-git pull
+
+git status --short --branch
+git pull --ff-only
 git submodule update --init --recursive
 
-cd /srv/personal-web/apps/book-reader
 npm ci
+npm run build
 
 cd /srv/personal-web/backend
 uv sync
 
-cd /srv/personal-web
-npm run build
-
 sudo systemctl restart personal-web-backend
+sudo nginx -t
 sudo systemctl reload nginx
+```
+
+验证：
+
+```bash
+curl -s http://47.99.200.227 | grep -o 'assets/index-[^"]*\.js'
+curl http://127.0.0.1:8000/api/health
+sudo systemctl status personal-web-backend --no-pager
 ```
 
 ## 十四、排查要点
