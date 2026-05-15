@@ -11,6 +11,7 @@ os.environ.setdefault("OPENROUTER_API_KEY", "sk-test-key")
 
 from main import create_app
 from services.ideas_store import IdeasStore
+from services.reading_journal_store import ReadingJournalStore
 from services.workflow_runs_store import WorkflowRunsStore
 
 
@@ -32,10 +33,16 @@ def workflow_runs_store(tmp_path):
 
 
 @pytest.fixture
-def app(ideas_store, workflow_runs_store):
+def reading_journal_store(tmp_path):
+    return ReadingJournalStore(data_dir=str(tmp_path / "reading-journal"))
+
+
+@pytest.fixture
+def app(ideas_store, workflow_runs_store, reading_journal_store):
     return create_app(
         ideas_store_instance=ideas_store,
         workflow_runs_store_instance=workflow_runs_store,
+        reading_journal_store_instance=reading_journal_store,
     )
 
 

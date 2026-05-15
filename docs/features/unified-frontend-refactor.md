@@ -1,6 +1,8 @@
 status: in_progress
 entrypoints:
   - README.md
+  - scripts/ops/bootstrap-codex-maintainer.sh
+  - scripts/ops/update-aliyun-service.sh
   - scripts/dev-all.mjs
   - scripts/build-all.mjs
   - scripts/prepare-daily-nuance-data.mjs
@@ -18,6 +20,7 @@ entrypoints:
   - frontend/src/lib/apiClient.ts
   - frontend/public/data/ideas/latest.json
   - frontend/public/data/daily-nuance/latest.json
+  - frontend/public/books/reading-resources.json
   - frontend/src/index.css
   - frontend/src/features/home/page/HomePage.tsx
   - frontend/src/features/home/components/FeatureGrid.tsx
@@ -30,6 +33,10 @@ entrypoints:
   - frontend/src/features/site-agent/page/SuperHaojunPage.tsx
   - frontend/src/core/site/backlog.ts
   - apps/book-reader/src/App.jsx
+  - apps/book-reader/src/views/Library.jsx
+  - apps/book-reader/src/views/LibraryResourceShelf.jsx
+  - apps/book-reader/src/views/LibraryResourceShelf.css
+  - apps/book-reader/public/books/reading-resources.json
   - apps/book-reader/src/components/Toolbar.jsx
   - apps/str-viewer/
 hard_constraints:
@@ -62,7 +69,9 @@ design_notes:
   - During local dev, configured child-app proxy targets are internal upstreams and must not leak into user-visible navigation URLs; `/book-reader-legacy/` should remain same-origin so the unified dev root can keep proxy ownership.
   - Runtime launch boundaries such as `SuperHaojun` must only auto-forward when an explicit public runtime URL is configured; local dev defaults and raw cloud IP assumptions must not redirect users to a dead service.
   - While the domain remains on Vercel static hosting, the homepage may expose one explicit external CTA into the Aliyun ECS service by public IP; this is a user-initiated whole-site handoff, not an automatic route redirect.
-last_updated: 2026-04-23
+  - Temporarily hide dormant surfaces from public navigation and homepage presentation instead of deleting their routes or historical implementation.
+  - Do not bundle copyrighted book files in Book Reader. For modern books, expose legal acquisition/source links and let the user upload owned EPUB/PDF files.
+last_updated: 2026-05-15
 ---
 
 # Unified Frontend Refactor
@@ -81,6 +90,8 @@ In scope:
 - rebuild `/daily-nuance` inside the unified frontend
 - keep `/book-reader` as the stable public reading entry while launching the legacy reader
 - preserve the current reader as `/book-reader-legacy/` behind that entry
+- temporarily remove Ideas and Daily Nuance from public homepage/navigation presentation while the owner is not using those workflows
+- add a Book Reader resource shelf for recently read/wanted Japanese literature using legal Chinese/Japanese source links
 
 Out of scope:
 
@@ -88,6 +99,7 @@ Out of scope:
 - full deep-reader parity work on a replacement reader
 - long-term preservation of the old `daily-nuance` site as a public surface
 - immediate removal of all legacy code
+- downloading, scraping, or bundling copyrighted EPUB/PDF/full-text files
 
 ## File Structure
 
@@ -99,10 +111,16 @@ Out of scope:
   - living feature doc for the refactor
 - `README.md`
   - quick-start and deployment-operations handoff, including the current Vercel static homepage to Aliyun public-IP service flow
+- `scripts/ops/bootstrap-codex-maintainer.sh`
+  - idempotent root-run bootstrap that creates or refreshes the `codex-deploy` maintainer user, SSH key, project ownership, and passwordless sudo access needed for ongoing ECS maintenance
+- `scripts/ops/update-aliyun-service.sh`
+  - maintainer-run deployment helper that stashes tracked local changes, pulls the latest `main`, updates submodules, rebuilds `dist`, syncs backend dependencies, restarts the backend service, reloads nginx, and prints verification checks
 - `scripts/dev-all.mjs`
   - starts the unified local dev stack and proxies the frontend, backend, and legacy reader through one root URL
 - `scripts/build-all.mjs`
   - builds the unified frontend first, then the legacy reader into its subpath output
+- `scripts/build-book-reader.mjs`
+  - builds the legacy reader into `dist/book-reader-legacy` and can skip dependency install scripts when `BOOK_READER_NPM_IGNORE_SCRIPTS=1` is set for constrained ECS deploys
 - `scripts/build-frontend.mjs`
   - empties the deployment output, then builds the frontend with production-safe env overrides instead of inheriting local dev-only backend origins
 - `scripts/prepare-daily-nuance-data.mjs`
@@ -124,7 +142,7 @@ Out of scope:
 - `frontend/src/core/site/deployment.ts`
   - centralizes temporary deployment handoff targets, including the Aliyun public service URL used by the Vercel-static homepage CTA
 - `frontend/src/core/site/navigation.ts`
-  - shared navigation and homepage-card model for the public surface, including the canonical book-reader and `SuperHaojun` entry copy
+  - shared navigation and homepage-card model for the public surface, currently hiding dormant Ideas and Daily Nuance entries while keeping their routes intact
 - `frontend/src/lib/apiClient.ts`
   - centralizes frontend API base resolution and must stay safe for static production builds
 - `frontend/public/data/ideas/latest.json`
@@ -134,11 +152,11 @@ Out of scope:
 - `frontend/src/index.css`
   - owns the global typography, smoothing, and page-transition baseline shared by all public routes
 - `frontend/src/core/site/backlog.ts`
-  - compact typed backlog mirror for homepage roadmap visibility, excluding completed or abandoned reader-rebuild work
+  - compact typed backlog mirror for homepage roadmap visibility, excluding completed, abandoned, or temporarily dormant surfaces
 - `frontend/src/features/home/`
-  - owns the homepage hero, entry cards, backlog visibility, and summary previews for the unified front door
+  - owns the homepage hero, entry cards, and backlog visibility for the unified front door
 - `frontend/src/features/home/components/FeatureGrid.tsx`
-  - renders the homepage entry cards and keeps Book Reader as one canonical entry instead of exposing duplicate new/legacy routes
+  - renders the currently active homepage entry cards and keeps Book Reader as one canonical entry instead of exposing duplicate new/legacy routes
 - `frontend/src/features/home/components/RoadmapSection.tsx`
   - renders the concise homepage backlog module from the typed site backlog data
 - `frontend/src/features/ideas/`
@@ -161,6 +179,8 @@ Out of scope:
   - owns the workflow run experience and must surface auth guidance when execution is gated
 - `frontend/public/books/manifest.json`
   - preset shelf manifest for the new in-site reader slice
+- `frontend/public/books/reading-resources.json`
+  - mirrored legal-source resource list for books that should appear in the reading ecosystem but cannot be bundled as files
 - `frontend/public/books/*.epub`
   - reader assets served directly by the unified frontend for the preset shelf
 - `frontend/src/pages/Home.tsx`, `frontend/src/pages/Ideas.tsx`, `frontend/src/pages/IdeaDetail.tsx`, `frontend/src/pages/DailyNuance.tsx`, `frontend/src/pages/BookReader.tsx`
@@ -169,6 +189,14 @@ Out of scope:
   - legacy reader implementation preserved under `/book-reader-legacy/`
 - `apps/book-reader/src/App.jsx`
   - renders the legacy reader shell and keeps top-level site navigation visible whenever the reader is not in focused reading mode
+- `apps/book-reader/src/views/Library.jsx`
+  - owns the legacy reader library, local upload flow, preset manifest loading, and legal resource shelf loading
+- `apps/book-reader/src/views/LibraryResourceShelf.jsx`
+  - renders non-openable resource cards for books that require the user to purchase/obtain a legal file before uploading
+- `apps/book-reader/src/views/LibraryResourceShelf.css`
+  - contains the scoped visual treatment for the resource shelf instead of growing the legacy global stylesheet
+- `apps/book-reader/public/books/reading-resources.json`
+  - canonical legacy-reader resource data for legal Chinese/Japanese acquisition links and notes
 - `apps/book-reader/src/components/Toolbar.jsx`
   - renders focused reader controls and must preserve a visible route back to the unified site even while reading
 - `apps/daily-nuance/`
@@ -179,13 +207,20 @@ Out of scope:
 Phase 1 now serves one public SPA surface from `frontend`:
 
 - `/`
-- `/ideas`
-- `/daily-nuance`
 - `/book-reader`
 - `/str-viewer/`
 - `/superhaojun`
 
+The Ideas and Daily Nuance routes remain implemented for future use and direct access, but they are temporarily hidden from public navigation, homepage feature cards, homepage hero CTAs, homepage preview panels, Not Found recovery links, and homepage backlog copy. The current public front door now emphasizes Skill Marketplace, Reading Journal, Book Reader, String Viewer, and SuperHaojun.
+
 The existing reader remains available under `/book-reader-legacy/` and is still built and proxied as a separate app during the transition. String Viewer is also built and proxied as a separate app, but unlike Book Reader it is served directly at its canonical public route instead of using an SPA transition page.
+
+The legacy Book Reader library distinguishes between readable files and book-resource intentions:
+
+- `books/manifest.json` remains only for bundled preset files that can actually be opened.
+- `books/reading-resources.json` lists modern copyrighted works as legal source cards, not as reader files.
+- Resource cards can link to publisher/bookstore/metadata pages in Chinese or Japanese and tell the owner to upload an owned EPUB/PDF before reading in-browser.
+- The initial resource shelf includes Banana Yoshimoto's `厨房 / キッチン`, Ryu Murakami's `无限近似于透明的蓝 / 限りなく透明に近いブルー`, and Aki Hamanaka's `死亡护理师 / 失控的照护 / ロスト・ケア`.
 
 Daily Nuance no longer depends on the old public Docusaurus site. Instead, the root toolchain prepares a generated snapshot and copies it into the frontend's static asset space, and the unified frontend reads that snapshot directly. The deployment-safe version of this flow must now match the Ideas snapshot behavior: when the generated submodule snapshot is absent on a build host, the committed frontend snapshot should be reused instead of silently triggering the live-source pipeline.
 
@@ -219,7 +254,7 @@ That refinement is now implemented in the current frontend:
 - the homepage hero stays atmospheric but no longer tries to explain every tool
 - the homepage entrypoint block is faster to scan and uses simpler directory-style entries
 - the homepage now includes a compact roadmap section backed by a typed backlog mirror instead of markdown parsing at runtime
-- homepage previews are framed as evidence of live content rather than primary navigation
+- homepage previews are currently removed while Ideas and Daily Nuance are dormant
 - the unified frontend must now acknowledge `SuperHaojun` as a first-class destination instead of leaving the richer runtime-oriented surface hidden behind the floating shell
 - `/superhaojun` should behave like `/book-reader`: a thin launch boundary into the higher-quality standalone surface rather than a second explanatory app inside the SPA
 - the ideas page now opens as a curated collection with a secondary control band
@@ -236,6 +271,12 @@ That refinement is now implemented in the current frontend:
   - Vercel keeps serving the public domain as a static site
   - the homepage Hero exposes `Open Aliyun Service` as an explicit external CTA to `http://47.99.200.227`
   - the README owns the short operational flow for updating the ECS copy: pull, update submodules, rebuild `dist`, sync backend dependencies, restart backend, and reload nginx
+- the ECS maintenance flow is now scriptable:
+  - root can re-run the bootstrap script after reconnecting to restore `codex-deploy` SSH and sudo maintenance permissions
+  - `codex-deploy` can run the update script to refresh the server from GitHub and redeploy the current project state without manually replaying the full command list
+  - the update script defaults `npm_config_ignore_scripts=true` and `BOOK_READER_NPM_IGNORE_SCRIPTS=1` during the static build so the legacy reader build does not hang on native `canvas` binary installation during ECS deploys
+  - the update script waits for backend health after `systemctl restart` so a normal FastAPI startup window does not make an otherwise successful deploy look failed
+  - the update script treats GitHub fetch failure as a real deployment failure rather than silently reusing a stale cached remote ref
 
 Residual risk remains intentionally limited to:
 
@@ -247,6 +288,8 @@ Residual risk remains intentionally limited to:
 - public Ideas reads now expected to degrade to a mirrored static snapshot on pure static deployments, while write and workflow operations still require a live backend
 - the standalone `SuperHaojun` WebUI still depending on separate runtime configuration and hosting even though the unified site now treats it as the canonical public runtime surface
 - the Vercel homepage temporarily needing a visible manual jump into the Aliyun public-IP service until the hosted app is stable enough for a domain or reverse-proxy cutover
+- Ideas and Daily Nuance routes staying available but not promoted, which may surprise direct-link users less than deleting those surfaces outright
+- Book Reader resource cards depending on external bookstore/publisher links remaining available and on the owner later uploading legally obtained files
 
 ## Change Notes
 
@@ -286,3 +329,5 @@ Residual risk remains intentionally limited to:
 - 2026-04-22: Updated the `SuperHaojun` launch-boundary rule for the temporary Vercel-to-Aliyun bridge: the committed public ECS URL is now treated as the documented default, while env overrides remain the path for future domain or port changes.
 - 2026-04-22: Reverted the temporary Vercel-to-Aliyun default after cloud bring-up showed the raw WebUI service is not stable enough to assume; the launch boundary again requires an explicit configured runtime URL before redirecting.
 - 2026-04-23: Started a lighter Vercel-to-Aliyun bridge: keep Vercel as the static domain host, add a manual homepage CTA to the Aliyun public-IP service, and document the server update flow in the root README.
+- 2026-04-26: Added scriptable ECS maintenance operations so the maintainer permissions and Aliyun service update flow can be restored or replayed with one command each.
+- 2026-05-15: Completed the dormant-surface cleanup and reader-resource sync: Ideas and Daily Nuance disappeared from public presentation while their routes remain available, Book Reader now lists legal Chinese/Japanese source cards for the owner's recent Japanese literature without bundling copyrighted files, and the homepage/backlog focuses on the reading workflow.

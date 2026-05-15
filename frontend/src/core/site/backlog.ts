@@ -10,9 +10,9 @@ export interface HomepageBacklogItem {
 export const homepageBacklogItems: HomepageBacklogItem[] = [
   {
     id: 'BL-01',
-    title: 'Daily Update Actions',
-    summary: 'Add an explicit trigger so ideas and nuance can refresh as deliberate daily actions.',
-    status: 'pending',
+    title: 'Reading Journal Capture',
+    summary: 'Keep recent Japanese literature entries synced privately, with reflections and quotes ready for owner notes.',
+    status: 'in_progress',
   },
   {
     id: 'BL-03',
@@ -22,8 +22,8 @@ export const homepageBacklogItems: HomepageBacklogItem[] = [
   },
   {
     id: 'BL-04',
-    title: 'Book Reader Deep Migration',
-    summary: 'Decide which deeper reader capabilities should move from the legacy app into the unified site next.',
+    title: 'Book Resource Shelf',
+    summary: 'Track legal Chinese and Japanese source links for books that should be uploaded after purchase or library access.',
     status: 'in_progress',
   },
 ]

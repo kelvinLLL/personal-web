@@ -15,6 +15,8 @@ const IdeaDetail = lazy(() => import('@/pages/IdeaDetail'))
 const DailyNuance = lazy(() => import('@/pages/DailyNuance'))
 const SkillMarketplace = lazy(() => import('@/pages/SkillMarketplace'))
 const SkillMarketplaceDetail = lazy(() => import('@/pages/SkillMarketplaceDetail'))
+const ReadingJournal = lazy(() => import('@/pages/ReadingJournal'))
+const SharedReadingJournal = lazy(() => import('@/pages/SharedReadingJournal'))
 const BookReader = lazy(() => import('@/pages/BookReader'))
 const SuperHaojun = lazy(() => import('@/pages/SuperHaojun'))
 const Settings = lazy(() => import('@/pages/Settings'))
@@ -47,6 +49,11 @@ export const appRoutes: RouteObject[] = [
       {
         path: `${toChildPath(siteRoutes.skillMarketplace)}/:ownerType/:slug`,
         element: withSuspense(<SkillMarketplaceDetail />),
+      },
+      { path: toChildPath(siteRoutes.readingJournal), element: withSuspense(<ReadingJournal />) },
+      {
+        path: `${toChildPath(siteRoutes.sharedReadingJournal)}/:shareToken`,
+        element: withSuspense(<SharedReadingJournal />),
       },
       { path: toChildPath(siteRoutes.bookReader), element: withSuspense(<BookReader />) },
       { path: toChildPath(siteRoutes.superhaojun), element: withSuspense(<SuperHaojun />) },

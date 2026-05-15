@@ -34,6 +34,14 @@ vi.mock('@/pages/SkillMarketplaceDetail', () => ({
   default: () => <div>Skill Marketplace Detail Route</div>,
 }))
 
+vi.mock('@/pages/ReadingJournal', () => ({
+  default: () => <div>Reading Journal Route</div>,
+}))
+
+vi.mock('@/pages/SharedReadingJournal', () => ({
+  default: () => <div>Shared Reading Journal Route</div>,
+}))
+
 vi.mock('@/pages/Settings', () => ({
   default: () => <div>Settings Route</div>,
 }))
@@ -54,9 +62,10 @@ describe('app router', () => {
     renderRoute('/')
 
     expect(await screen.findByRole('link', { name: 'Home' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Ideas' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Daily Nuance' })).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Ideas' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Daily Nuance' })).not.toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Skill Marketplace' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Reading Journal' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Book Reader' })).toBeInTheDocument()
     const stringViewerLink = screen.getByRole('link', { name: 'String Viewer' })
     expect(stringViewerLink).toHaveAttribute('href', '/str-viewer/')
@@ -95,5 +104,17 @@ describe('app router', () => {
     renderRoute('/skill-marketplace/personal/sdd-feature-development')
 
     expect(await screen.findByText('Skill Marketplace Detail Route')).toBeInTheDocument()
+  })
+
+  it('resolves reading journal routes inside the SPA', async () => {
+    renderRoute('/reading-journal')
+
+    expect(await screen.findByText('Reading Journal Route')).toBeInTheDocument()
+  })
+
+  it('resolves token-scoped shared reading journal routes inside the SPA', async () => {
+    renderRoute('/reading-journal/shared/share-token-1')
+
+    expect(await screen.findByText('Shared Reading Journal Route')).toBeInTheDocument()
   })
 })

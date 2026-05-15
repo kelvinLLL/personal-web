@@ -16,19 +16,14 @@ export const primaryNavigation: SiteNavigationItem[] = [
     summary: 'Unified entrypoint for the site.',
   },
   {
-    label: 'Ideas',
-    to: siteRoutes.ideas,
-    summary: 'Build-worthy projects and operator workflows.',
-  },
-  {
-    label: 'Daily Nuance',
-    to: siteRoutes.dailyNuance,
-    summary: 'Interesting signals, ranked by novelty and momentum.',
-  },
-  {
     label: 'Skill Marketplace',
     to: siteRoutes.skillMarketplace,
     summary: 'Browse personal skills and curated community tools.',
+  },
+  {
+    label: 'Reading Journal',
+    to: siteRoutes.readingJournal,
+    summary: 'Private book notes with invitation-only comments.',
   },
   {
     label: 'Book Reader',

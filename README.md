@@ -65,21 +65,44 @@ frontend/src/core/site/deployment.ts
 
 ## Update Aliyun Service
 
+If maintainer permissions need to be restored after logging into ECS as root, run:
+
+```bash
+cd /srv/personal-web
+sudo bash scripts/ops/bootstrap-codex-maintainer.sh
+```
+
+On the current ECS host, the same helper is also installed as:
+
+```bash
+sudo personal-web-bootstrap-codex
+```
+
 Use this when code has been pushed to GitHub and you want the ECS public IP service to show the latest site:
 
 ```bash
 cd /srv/personal-web
+scripts/ops/update-aliyun-service.sh
+```
 
-git status --short --branch
+On the current ECS host, the same helper is also installed as:
+
+```bash
+personal-web-update
+```
+
+The update script stashes tracked local changes, pulls the latest `main`, updates submodules, rebuilds `dist`, syncs backend dependencies, restarts `personal-web-backend`, reloads nginx, and prints verification output. If ECS cannot reach GitHub, the script fails during fetch instead of silently deploying a stale cached commit; the running service remains on the previously deployed version.
+
+The manual equivalent is:
+
+```bash
+cd /srv/personal-web
 git pull --ff-only
 git submodule update --init --recursive
-
 npm ci
 npm run build
-
-cd /srv/personal-web/backend
+cd backend
 uv sync
-
 sudo systemctl restart personal-web-backend
 sudo nginx -t
 sudo systemctl reload nginx

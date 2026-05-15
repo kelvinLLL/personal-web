@@ -23,36 +23,36 @@ export function HomeHero() {
                 Kelvin's Creative Lab
               </h1>
               <p className="max-w-2xl text-lg leading-8 text-zinc-200">
-                A focused front door for ideas, daily signals, reading, skills, and the
+                A quieter front door for reading notes, book files, personal skills, and the
                 SuperHaojun agent surface.
               </p>
               <p className="max-w-2xl text-sm leading-7 text-zinc-400">
-                Pick a surface, scan what is moving, and jump into the tool that matches the work.
+                Open the notebook, continue a book, or jump into the tool that matches the work.
               </p>
             </div>
           </div>
 
           <div className="flex flex-wrap gap-3">
             <Link
-              to={siteRoutes.ideas}
+              to={siteRoutes.readingJournal}
               className={buttonVariants({
                 variant: 'default',
                 className:
                   'min-h-11 gap-2 bg-white px-4 text-zinc-950 hover:bg-zinc-200 focus-visible:ring-white/40',
               })}
             >
-              Explore Ideas
+              Open Reading Journal
               <ArrowRight className="size-4" aria-hidden="true" />
             </Link>
             <Link
-              to={siteRoutes.dailyNuance}
+              to={siteRoutes.bookReader}
               className={buttonVariants({
                 variant: 'outline',
                 className:
                   'min-h-11 gap-2 border-white/20 bg-white/5 px-4 text-white hover:bg-white/10 hover:text-white focus-visible:ring-white/40',
               })}
             >
-              Check Daily Nuance
+              Open Book Reader
               <ArrowRight className="size-4" aria-hidden="true" />
             </Link>
             <a

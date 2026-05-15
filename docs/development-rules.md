@@ -23,6 +23,7 @@ Use it for project-wide constraints and durable insights that should influence f
 - When a replacement surface is materially worse than the incumbent, collapse the public entry back to the incumbent instead of maintaining two competing product paths.
 - When a public read surface must still work on static hosting, mirror a build-time snapshot into frontend assets and let the UI fall back to that snapshot instead of assuming a live `/api/*` backend will always exist.
 - When a build-time snapshot refresh depends on local working data that is intentionally gitignored, the prepare step must gracefully reuse the committed frontend snapshot on deployment rather than failing because the local source file is absent.
+- When a backend JSON store contains private user-authored content, keep the generated data file gitignored and let the service create its empty local store on demand.
 
 ## Documentation Flow
 

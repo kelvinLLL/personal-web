@@ -394,7 +394,35 @@ sudo certbot --nginx -d yourdomain.com -d www.yourdomain.com
 
 ## 十三、更新发布流程
 
-以后更新时按这个顺序：
+如果你重新登录后需要恢复给 Codex 的维护权限，先用 root 跑一次：
+
+```bash
+cd /srv/personal-web
+sudo bash scripts/ops/bootstrap-codex-maintainer.sh
+```
+
+当前 ECS 上也安装了同等快捷命令：
+
+```bash
+sudo personal-web-bootstrap-codex
+```
+
+以后更新服务时，推荐直接跑：
+
+```bash
+cd /srv/personal-web
+scripts/ops/update-aliyun-service.sh
+```
+
+当前 ECS 上也安装了同等快捷命令：
+
+```bash
+personal-web-update
+```
+
+它会自动完成：暂存本地已跟踪改动、拉取最新 `main`、更新 submodule、重新构建 `dist`、同步 backend 依赖、重启 `personal-web-backend`、检查 nginx 并 reload。如果 ECS 当时无法连通 GitHub，脚本会在 fetch 阶段失败，而不是静默部署旧缓存；线上服务会继续停留在上一次成功部署的版本。
+
+手动等价流程如下：
 
 ```bash
 cd /srv/personal-web

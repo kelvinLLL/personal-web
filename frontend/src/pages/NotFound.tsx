@@ -23,10 +23,10 @@ export default function NotFound() {
           Book Reader
         </a>
         <a
-          href="/daily-nuance/"
+          href="/reading-journal"
           className="px-5 py-2.5 border border-stone-300 rounded-lg hover:bg-stone-50 transition-colors text-sm font-medium text-stone-700"
         >
-          Daily Nuance
+          Reading Journal
         </a>
       </div>
     </PageContainer>

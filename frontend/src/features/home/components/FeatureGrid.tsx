@@ -1,13 +1,12 @@
 import { Link } from 'react-router-dom'
 import {
-  Activity,
   ArrowUpRight,
   Blocks,
   BookOpenText,
   Bot,
   ChevronRight,
   Compass,
-  Lightbulb,
+  NotebookPen,
   TextCursorInput,
   type LucideIcon,
 } from 'lucide-react'
@@ -20,20 +19,15 @@ interface FeatureVisual {
 }
 
 const featureVisuals: Record<string, FeatureVisual> = {
-  Ideas: {
-    Icon: Lightbulb,
-    meta: 'Collection',
-    accent: 'bg-blue-50 text-blue-700 ring-blue-100',
-  },
-  'Daily Nuance': {
-    Icon: Activity,
-    meta: 'Signals',
-    accent: 'bg-emerald-50 text-emerald-700 ring-emerald-100',
-  },
   'Skill Marketplace': {
     Icon: Blocks,
     meta: 'Tools',
     accent: 'bg-violet-50 text-violet-700 ring-violet-100',
+  },
+  'Reading Journal': {
+    Icon: NotebookPen,
+    meta: 'Notes',
+    accent: 'bg-rose-50 text-rose-800 ring-rose-100',
   },
   'Book Reader': {
     Icon: BookOpenText,
@@ -67,16 +61,16 @@ export function FeatureGrid() {
             Tool Entrypoints
           </p>
           <h2 className="mt-2 text-2xl font-semibold text-zinc-950">
-            Six surfaces, one clean launch point.
+            Five useful surfaces, one calm launch point.
           </h2>
         </div>
         <p className="max-w-2xl text-sm leading-7 text-zinc-600 md:justify-self-end">
-          The homepage should not make you decode the site. Each entry below names the job, shows
-          the surface type, and keeps the full hit area comfortable on touch devices.
+          The homepage now keeps the dormant experiments out of your way. Each entry below names
+          the job, shows the surface type, and keeps the full hit area comfortable on touch devices.
         </p>
       </div>
 
-      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {homepageFeatureCards.map((item) => {
           const visual = featureVisuals[item.label] ?? fallbackVisual
           const Icon = visual.Icon

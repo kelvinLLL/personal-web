@@ -1,90 +1,11 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { RouterProvider, createMemoryRouter } from 'react-router-dom'
 import { RootLayout } from '@/app/layout/RootLayout'
 import { screen, render } from '@/test/utils'
 import { HomePage } from '@/features/home/page/HomePage'
 
-const fetchIdeas = vi.fn()
-
-const ideasStoreState = {
-  ideas: [
-    {
-      id: 'idea-1',
-      title: 'Signal-first Project Finder',
-      tagline: 'Turn interesting signals into concrete build candidates.',
-      category: 'tool' as const,
-      status: 'pending' as const,
-      scores: {
-        value: 9,
-        learnability: 7,
-        fun: 8,
-        feasibility: 7,
-        overall: 9,
-      },
-      detail: {
-        why_interesting: 'Interesting',
-        why_worth_doing: 'Worth doing',
-        references: [],
-        tech_hints: ['react'],
-        effort: 'M' as const,
-      },
-      meta: {
-        discovered_at: '2026-04-13T00:00:00.000Z',
-        source: 'manual' as const,
-      },
-    },
-  ],
-  fetchIdeas,
-  loading: false,
-  error: null,
-}
-
-vi.mock('@/features/ideas/store/useIdeasStore', () => ({
-  useIdeasStore: (selector: (state: typeof ideasStoreState) => unknown) => selector(ideasStoreState),
-}))
-
-vi.mock('@/features/daily-nuance/api/dailyNuanceApi', () => ({
-  loadDailyNuanceSnapshot: vi.fn().mockResolvedValue({
-    snapshot_date: '2026-04-13',
-    overview: {
-      new_fancy: [
-        {
-          entity_id: 'nuance-1',
-          slug: 'fresh-signal',
-          title: 'Fresh Signal',
-          summary: 'Interesting',
-          canonical_url: 'https://example.com',
-          kind: 'article',
-          source_names: ['hn'],
-          domains: ['ai'],
-          first_seen_on: '2026-04-13',
-          last_seen_on: '2026-04-13',
-          scores: {
-            new_fancy: 80,
-            proven_rising: 60,
-            freshness: 100,
-            momentum: 90,
-            authority: 70,
-          },
-        },
-      ],
-      proven_rising: [],
-    },
-    domains: {
-      ai: {
-        new_fancy: [],
-        proven_rising: [],
-      },
-    },
-  }),
-}))
-
 describe('HomePage', () => {
-  beforeEach(() => {
-    fetchIdeas.mockReset()
-  })
-
-  it('shows the unified public-surface entry cards and top idea preview', async () => {
+  it('shows the focused public entry cards without dormant ideas or nuance surfaces', async () => {
     const router = createMemoryRouter(
       [
         {
@@ -98,26 +19,32 @@ describe('HomePage', () => {
 
     render(<RouterProvider router={router} />)
 
-    expect(await screen.findByText('Fresh Signal')).toBeInTheDocument()
+    expect(await screen.findByText("Kelvin's Creative Lab")).toBeInTheDocument()
 
-    expect(screen.getByRole('link', { name: 'Explore Ideas' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Check Daily Nuance' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Open Reading Journal' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Open Book Reader' })).toBeInTheDocument()
     const aliyunServiceLink = screen.getByRole('link', { name: 'Open Aliyun Service' })
     expect(aliyunServiceLink).toHaveAttribute('href', 'http://47.99.200.227')
     expect(aliyunServiceLink).toHaveAttribute('data-app-boundary', 'external')
+    expect(screen.queryByRole('link', { name: 'Explore Ideas' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Check Daily Nuance' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /ideas/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /daily nuance/i })).not.toBeInTheDocument()
     expect(screen.getAllByRole('link', { name: /skill marketplace/i }).length).toBeGreaterThan(0)
+    expect(screen.getAllByRole('link', { name: /reading journal/i }).length).toBeGreaterThan(0)
     expect(screen.getAllByRole('link', { name: /book reader/i }).length).toBeGreaterThan(0)
     const stringViewerLinks = screen.getAllByRole('link', { name: /string viewer/i })
     expect(stringViewerLinks.length).toBeGreaterThan(0)
     expect(stringViewerLinks.some((link) => link.getAttribute('href') === '/str-viewer/')).toBe(true)
     expect(screen.getByRole('button', { name: 'Open site agent' })).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: /legacy reader/i })).not.toBeInTheDocument()
-    expect(screen.getByText('Six surfaces, one clean launch point.')).toBeInTheDocument()
-    expect(screen.getByText(/The homepage should not make you decode the site/i)).toBeInTheDocument()
-    expect(screen.getByText('Signal-first Project Finder')).toBeInTheDocument()
+    expect(screen.getByText('Five useful surfaces, one calm launch point.')).toBeInTheDocument()
+    expect(screen.getByText(/dormant experiments out of your way/i)).toBeInTheDocument()
     expect(screen.getByText('Operating Queue')).toBeInTheDocument()
-    expect(screen.getByText('Daily Update Actions')).toBeInTheDocument()
+    expect(screen.getByText('Reading Journal Capture')).toBeInTheDocument()
+    expect(screen.getByText('Book Resource Shelf')).toBeInTheDocument()
     expect(screen.getAllByText('Skill Marketplace').length).toBeGreaterThanOrEqual(2)
     expect(screen.queryByText('Book Reader Rebuild')).not.toBeInTheDocument()
+    expect(screen.queryByText('Daily Update Actions')).not.toBeInTheDocument()
   })
 })

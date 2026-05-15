@@ -7,7 +7,10 @@ const legacyOutputDir = path.join(DIST_DIR, 'book-reader-legacy');
 
 await ensureDir(DIST_DIR);
 await ensureEmptyDir(legacyOutputDir);
-run('npm', ['ci'], {cwd: BOOK_READER_DIR});
+const npmCiArgs = process.env.BOOK_READER_NPM_IGNORE_SCRIPTS === '1'
+  ? ['ci', '--ignore-scripts']
+  : ['ci'];
+run('npm', npmCiArgs, {cwd: BOOK_READER_DIR});
 run('npm', ['run', 'build'], {
   cwd: BOOK_READER_DIR,
   env: buildBookReaderEnv(),
