@@ -2,6 +2,7 @@
 status: designing
 entrypoints:
   - docs/superpowers/specs/2026-05-18-life-log-design.md
+  - docs/superpowers/specs/2026-05-18-life-log-design.zh.md
   - life-log/
   - frontend/src/
 hard_constraints:
@@ -53,6 +54,8 @@ Out of scope for the first slice:
 
 - `docs/superpowers/specs/2026-05-18-life-log-design.md`
   - approved design contract for the first Life Log slice
+- `docs/superpowers/specs/2026-05-18-life-log-design.zh.md`
+  - Chinese review version of the Life Log design
 - `docs/features/life-log.md`
   - living feature document and current boundary notes
 - `life-log/`
@@ -91,3 +94,4 @@ This intentionally separates writing from reading. Codex handles language shapin
 
 - 2026-05-18: Created the Life Log feature doc and selected the Markdown-first, Codex-authored, read-only website approach.
 - 2026-05-18: Updated the implementation boundary to start in a dedicated repo-root `life-log/` folder before future integration into `personal-web`.
+- 2026-05-18: Added a Chinese review version of the design for user approval.
