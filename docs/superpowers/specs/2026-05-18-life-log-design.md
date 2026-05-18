@@ -2,17 +2,25 @@
 
 ## Goal
 
-Add an independent private `Life Log` channel to `personal-web`.
+Add an independent private `Life Log` channel that starts as a dedicated repo-root folder inside `personal-web` and can later be integrated into the main website.
 
 The channel captures voice-transcribed personal reflections and everyday events before they disappear into time. It should feel like a personal memory archive first, and only secondarily like a publishing surface.
 
-The first slice uses Markdown files as the durable source of truth. Codex is the creation and editing interface; the website is the read-only place to revisit entries.
+The first slice uses Markdown files as the durable source of truth. Codex is the creation and editing interface. The implementation should begin in a root-level `life-log/` workspace, with the main personal website integration added after the data and rendering contract are stable.
 
 ## Product Shape
 
-Life Log is a private channel in the personal website, separate from `Daily Nuance`.
+Life Log is a private channel concept, separate from `Daily Nuance`.
 
-The first slice has two user-facing surfaces:
+Implementation starts under:
+
+```text
+personal-web/life-log/
+```
+
+That folder owns the early data format, generation helpers, and optional standalone preview. The existing personal website at `/Users/haojunliu/Easy/NapPlace/personal-web` remains the future integration target.
+
+The first slice should support two read surfaces, either as a standalone preview inside `life-log/` or as the contract that the later personal-web integration will render:
 
 - `Life Log Index`
   - chronological list of entries
@@ -36,7 +44,8 @@ The writing path is intentionally outside the browser:
 2. The user gives the transcript to Codex.
 3. Codex creates a dated Markdown entry.
 4. Codex may revise the entry later when the user says "改一下今天这篇" or provides more material.
-5. The site renders the latest committed entries.
+5. The `life-log/` workspace parses the latest committed entries and can emit a generated snapshot.
+6. A later personal-web integration renders that snapshot or source data inside the main site.
 
 This avoids building browser auth, live AI generation, save conflict handling, and speech-to-text before the core habit is proven.
 
@@ -45,13 +54,13 @@ This avoids building browser auth, live AI generation, save conflict handling, a
 Entries live under:
 
 ```text
-data/life-log/YYYY-MM-DD.md
+life-log/data/entries/YYYY-MM-DD.md
 ```
 
 If multiple entries are needed on the same day, use a short suffix:
 
 ```text
-data/life-log/YYYY-MM-DD-wedding.md
+life-log/data/entries/YYYY-MM-DD-wedding.md
 ```
 
 Each entry uses Markdown with frontmatter:
@@ -128,14 +137,16 @@ The channel is personal, not promotional. The visual tone should feel like a pri
 
 First slice:
 
-- create the data folder
+- create the repo-root `life-log/` folder
+- create `life-log/data/entries/`
 - add at least one sample entry from the user's 2026-05-17 wedding reflection
-- add build-time parsing or snapshot generation for Markdown files
-- add read-only frontend route and navigation entry
+- add parsing or snapshot generation for Markdown files inside `life-log/`
+- add a minimal standalone read preview if it helps validate the content shape
 - test that entries parse and render
 
 Later slices:
 
+- integrate `life-log/` into the existing `personal-web` frontend navigation and routes
 - lightweight web edits for title/tags/favorite
 - tag and mood filters
 - search
@@ -185,6 +196,6 @@ First implementation should include:
 
 ## Open Implementation Choice
 
-During planning, decide whether the frontend reads Markdown directly at build time or reads a generated JSON snapshot.
+During planning, decide whether the future frontend integration reads Markdown directly at build time or reads a generated JSON snapshot from `life-log/generated/`.
 
 Default recommendation: generate a small typed JSON snapshot during build, because the existing repo already uses build-time data preparation patterns.

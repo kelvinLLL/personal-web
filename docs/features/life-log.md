@@ -2,11 +2,12 @@
 status: designing
 entrypoints:
   - docs/superpowers/specs/2026-05-18-life-log-design.md
-  - data/life-log/
+  - life-log/
   - frontend/src/
 hard_constraints:
   - Follow docs/development-rules.md.
   - The first implementation is Codex-authored and site-read-only.
+  - Start implementation in a dedicated repo-root `life-log/` folder before integrating it into the existing personal-web frontend.
   - Keep raw transcripts private by default and preserve them as source material.
 design_notes:
   - Markdown files are the durable source of truth.
@@ -33,8 +34,9 @@ Success means:
 In scope for the first slice:
 
 - define a Markdown-first entry format with structured frontmatter
-- add a dedicated `Life Log` website channel
-- render a chronological list and entry detail view
+- create a dedicated repo-root `life-log/` workspace
+- prepare the data and rendering contract for a future `Life Log` website channel
+- render or preview a chronological list and entry detail view from that workspace
 - include raw transcript, event bullets, core insight, edited note, literary note, and tags
 - keep website editing out of the first implementation
 
@@ -53,12 +55,16 @@ Out of scope for the first slice:
   - approved design contract for the first Life Log slice
 - `docs/features/life-log.md`
   - living feature document and current boundary notes
-- `data/life-log/`
+- `life-log/`
+  - root-level Life Log workspace; owns source Markdown entries, parsing/generation scripts, and any standalone preview used before full site integration
+- `life-log/data/entries/`
   - source Markdown entries authored by Codex from user transcripts
+- `life-log/generated/`
+  - optional generated snapshot output for previews or later frontend consumption
 - `frontend/src/`
-  - eventual read-only Life Log route, navigation entry, and rendering components
+  - future integration target for read-only Life Log route, navigation entry, and rendering components
 - `scripts/`
-  - eventual build-time preparation script if the frontend needs a JSON snapshot of Markdown entries
+  - future integration hooks if the main personal-web build needs to consume `life-log/generated/`
 
 ## Current Design
 
@@ -66,9 +72,9 @@ Life Log uses a Codex-first writing workflow:
 
 1. The user speaks into an external speech-to-text tool.
 2. The user sends the transcript to Codex.
-3. Codex creates or updates one dated Markdown entry under `data/life-log/`.
-4. The website reads the entries at build time or through a generated static snapshot.
-5. The website displays entries as a private chronological archive.
+3. Codex creates or updates one dated Markdown entry under `life-log/data/entries/`.
+4. The `life-log/` workspace parses entries and can emit a small generated snapshot.
+5. A later personal-web integration reads that snapshot or the Markdown source and displays a private chronological archive.
 
 The Markdown file is the durable source of truth. Each file keeps:
 
@@ -79,8 +85,9 @@ The Markdown file is the durable source of truth. Each file keeps:
 - lightly edited version
 - literary note version
 
-This intentionally separates writing from reading. Codex handles language shaping and revision. The website stays simple, predictable, and read-only in the first slice.
+This intentionally separates writing from reading. Codex handles language shaping and revision. The first implementation stays isolated in `life-log/`; the main website can integrate it once the entry format and review habit are proven.
 
 ## Change Notes
 
 - 2026-05-18: Created the Life Log feature doc and selected the Markdown-first, Codex-authored, read-only website approach.
+- 2026-05-18: Updated the implementation boundary to start in a dedicated repo-root `life-log/` folder before future integration into `personal-web`.
