@@ -11,6 +11,7 @@
     "dev:frontend": "npm --prefix frontend run dev",
     "dev:backend": "cd backend && .venv/bin/uvicorn main:app --reload --port 8000",
     "refresh:daily-nuance": "node scripts/refresh-daily-nuance.mjs",
+    "build:life-log": "node life-log/scripts/build-snapshot.mjs",
     "build:portal": "node scripts/build-portal.mjs",
     "build:frontend": "npm --prefix frontend run build",
     "build:book-reader": "node scripts/build-book-reader.mjs",

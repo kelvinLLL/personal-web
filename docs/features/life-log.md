@@ -1,9 +1,11 @@
 ---
-status: designing
+status: shipped
 entrypoints:
   - docs/superpowers/specs/2026-05-18-life-log-design.md
   - docs/superpowers/specs/2026-05-18-life-log-design.zh.md
+  - docs/superpowers/plans/2026-05-18-life-log.md
   - life-log/
+  - tests/lifeLogParser.test.mjs
   - frontend/src/
 hard_constraints:
   - Follow docs/development-rules.md.
@@ -56,14 +58,26 @@ Out of scope for the first slice:
   - approved design contract for the first Life Log slice
 - `docs/superpowers/specs/2026-05-18-life-log-design.zh.md`
   - Chinese review version of the Life Log design
+- `docs/superpowers/plans/2026-05-18-life-log.md`
+  - implementation plan for the isolated Life Log workspace
 - `docs/features/life-log.md`
   - living feature document and current boundary notes
 - `life-log/`
   - root-level Life Log workspace; owns source Markdown entries, parsing/generation scripts, and any standalone preview used before full site integration
 - `life-log/data/entries/`
   - source Markdown entries authored by Codex from user transcripts
+- `life-log/data/entries/2026-05-17-wedding.md`
+  - first real sample entry using the wedding reflection transcript
+- `life-log/src/parse-entry.mjs`
+  - pure parser for frontmatter, required sections, event bullets, and entry metadata
+- `life-log/scripts/build-snapshot.mjs`
+  - standalone build script that parses entries and writes generated preview artifacts
 - `life-log/generated/`
-  - optional generated snapshot output for previews or later frontend consumption
+  - generated snapshot and HTML preview output for isolated review or later frontend consumption
+- `tests/lifeLogParser.test.mjs`
+  - parser contract tests for required frontmatter and sections
+- `package.json`
+  - exposes `npm run build:life-log`
 - `frontend/src/`
   - future integration target for read-only Life Log route, navigation entry, and rendering components
 - `scripts/`
@@ -76,7 +90,7 @@ Life Log uses a Codex-first writing workflow:
 1. The user speaks into an external speech-to-text tool.
 2. The user sends the transcript to Codex.
 3. Codex creates or updates one dated Markdown entry under `life-log/data/entries/`.
-4. The `life-log/` workspace parses entries and can emit a small generated snapshot.
+4. `npm run build:life-log` parses entries and emits `life-log/generated/entries.json` plus `life-log/generated/index.html`.
 5. A later personal-web integration reads that snapshot or the Markdown source and displays a private chronological archive.
 
 The Markdown file is the durable source of truth. Each file keeps:
@@ -95,3 +109,4 @@ This intentionally separates writing from reading. Codex handles language shapin
 - 2026-05-18: Created the Life Log feature doc and selected the Markdown-first, Codex-authored, read-only website approach.
 - 2026-05-18: Updated the implementation boundary to start in a dedicated repo-root `life-log/` folder before future integration into `personal-web`.
 - 2026-05-18: Added a Chinese review version of the design for user approval.
+- 2026-05-18: Shipped the isolated `life-log/` workspace with one sample entry, parser tests, JSON snapshot generation, and a standalone HTML preview.
