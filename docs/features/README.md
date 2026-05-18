@@ -29,6 +29,7 @@ Reusable rules belong in `docs/development-rules.md`, not only in the local feat
 ## Current Docs
 
 - [Home Page UI Refactor](./home-page-ui-refactor.md)
+- [Life Log](./life-log.md)
 - [Reading Journal](./reading-journal.md)
 - [SDD Feature Development](./sdd-feature-development.md)
 - [String Viewer Integration](./string-viewer-integration.md)
