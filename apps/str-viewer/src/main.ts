@@ -1,8 +1,16 @@
 import "./styles.css";
-import { formatStringForReading, type StringView } from "./stringFormatter";
+import { formatStringForReading, type StringModeView, type StringView } from "./stringFormatter";
+
+type OutputMode = keyof StringView["modes"];
 
 const sampleText =
   '"system: 你是一个严谨的助手\\n\\nuser: 请整理这段 prompt：\\\\n- 保留引号\\n- 展示换行\\n- 不执行任何代码"';
+
+const outputModeLabels: Record<OutputMode, string> = {
+  raw: "RAW",
+  readable: "READABLE",
+  jsonFields: "JSON FIELDS",
+};
 
 document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
   <a class="skip-link" href="#source-input">跳到输入</a>
@@ -13,6 +21,7 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
         <div>
           <p class="eyebrow">STR VIEWER</p>
           <h1>字符串阅读器</h1>
+          <p class="brand-copy">按行展开字符串，保留空行，尽量还原嵌套转义。</p>
         </div>
       </div>
       <div class="actions" aria-label="工具">
@@ -28,16 +37,27 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
           <span>输入</span>
           <span>RAW</span>
         </span>
-        <textarea id="source-input" spellcheck="false" autocomplete="off"></textarea>
+        <textarea
+          id="source-input"
+          spellcheck="false"
+          autocomplete="off"
+          autocapitalize="off"
+          placeholder="粘贴带引号、转义符或多层换行的原始字符串"
+        ></textarea>
       </label>
 
       <section class="pane output-pane" aria-label="格式化输出">
         <div class="output-head">
-          <div>
+          <div class="output-tools">
             <span class="panel-title">
               <span>输出</span>
-              <span>FORMATTED</span>
+              <span id="output-mode-badge">READABLE</span>
             </span>
+            <div class="mode-switch" role="group" aria-label="输出视图">
+              <button class="mode-button" type="button" data-output-mode="raw">原文</button>
+              <button class="mode-button" type="button" data-output-mode="readable">展开</button>
+              <button class="mode-button" type="button" data-output-mode="jsonFields">字段</button>
+            </div>
           </div>
           <div id="stats-line" class="stats-grid" aria-label="格式化统计"></div>
           <div id="notice-list" class="notices"></div>
@@ -58,11 +78,22 @@ const statsLine = must<HTMLDivElement>("#stats-line");
 const noticeList = must<HTMLDivElement>("#notice-list");
 const lineOutput = must<HTMLDivElement>("#line-output");
 const copyFeedback = must<HTMLParagraphElement>("#copy-feedback");
+const outputModeBadge = must<HTMLSpanElement>("#output-mode-badge");
+const modeButtons = Array.from(document.querySelectorAll<HTMLButtonElement>("[data-output-mode]"));
+
+let activeMode: OutputMode = "readable";
 
 sourceInput.value = sampleText;
 render();
 
 sourceInput.addEventListener("input", render);
+
+for (const button of modeButtons) {
+  button.addEventListener("click", () => {
+    activeMode = parseOutputMode(button.dataset.outputMode);
+    render();
+  });
+}
 
 sampleButton.addEventListener("click", () => {
   sourceInput.value = sampleText;
@@ -78,10 +109,19 @@ clearButton.addEventListener("click", () => {
 
 copyButton.addEventListener("click", async () => {
   const view = formatStringForReading(sourceInput.value);
+  const modeView = view.modes[activeMode];
+
+  if (modeView.empty) {
+    setCopyState("无内容", "当前视图没有可复制内容");
+    window.setTimeout(() => {
+      setCopyState("复制结果", "");
+    }, 1200);
+    return;
+  }
 
   try {
-    await navigator.clipboard.writeText(view.readable);
-    setCopyState("已复制", "已复制格式化结果");
+    await navigator.clipboard.writeText(modeView.text);
+    setCopyState("已复制", `已复制${outputModeLabels[activeMode]}视图`);
   } catch {
     setCopyState("复制失败", "复制失败，请手动选中输出内容");
   }
@@ -93,14 +133,26 @@ copyButton.addEventListener("click", async () => {
 
 function render(): void {
   const view = formatStringForReading(sourceInput.value);
-  renderStats(view);
+  const modeView = view.modes[activeMode];
+  renderModeButtons();
+  renderStats(modeView);
   renderNotices(view.notices);
-  renderLines(view);
+  renderLines(view, modeView);
 }
 
-function renderStats(view: StringView): void {
+function renderModeButtons(): void {
+  outputModeBadge.textContent = outputModeLabels[activeMode];
+
+  for (const button of modeButtons) {
+    const mode = parseOutputMode(button.dataset.outputMode);
+    button.setAttribute("aria-pressed", String(mode === activeMode));
+  }
+}
+
+function renderStats(view: StringModeView): void {
   statsLine.replaceChildren(
     createStat("行", String(view.stats.lines)),
+    createStat("空行", String(view.stats.blankLines)),
     createStat("字符", String(view.stats.characters)),
     createStat("可见", String(view.stats.visibleCharacters)),
   );
@@ -132,10 +184,22 @@ function renderNotices(notices: string[]): void {
   }
 }
 
-function renderLines(view: StringView): void {
+function renderLines(view: StringView, modeView: StringModeView): void {
   lineOutput.replaceChildren();
+  const isEmptyState = view.source.length === 0 || modeView.empty;
+  lineOutput.classList.toggle("is-empty-state", isEmptyState);
 
-  for (const line of view.lines) {
+  if (view.source.length === 0) {
+    renderEmptyState("等待输入", "输出会在这里按行展开。");
+    return;
+  }
+
+  if (modeView.empty) {
+    renderEmptyState("没有 JSON 字段", "当前输入没有可展开的 JSON 字符串字段。");
+    return;
+  }
+
+  for (const line of modeView.lines) {
     const row = document.createElement("div");
     row.className = "line-row";
 
@@ -152,6 +216,22 @@ function renderLines(view: StringView): void {
   }
 }
 
+function renderEmptyState(titleText: string, detailText: string): void {
+  const state = document.createElement("div");
+  state.className = "empty-state";
+
+  const title = document.createElement("p");
+  title.className = "empty-title";
+  title.textContent = titleText;
+
+  const detail = document.createElement("p");
+  detail.className = "empty-copy";
+  detail.textContent = detailText;
+
+  state.append(title, detail);
+  lineOutput.append(state);
+}
+
 function setCopyState(label: string, message: string): void {
   copyButton.textContent = label;
   copyFeedback.textContent = message;
@@ -165,4 +245,12 @@ function must<T extends Element>(selector: string): T {
   }
 
   return element;
+}
+
+function parseOutputMode(value: string | undefined): OutputMode {
+  if (value === "raw" || value === "readable" || value === "jsonFields") {
+    return value;
+  }
+
+  return "readable";
 }
